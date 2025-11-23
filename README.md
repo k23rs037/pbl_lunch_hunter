@@ -23,4 +23,4 @@ C:/php/lampp-docker8/htdocs/
 - フォルダ名：小文字4字以内
     - 例）src
 - ファイル名：_,小文字のみの分かりやすい英語名
-    - 例）usr_login.php
+    - 例）user_login.php
