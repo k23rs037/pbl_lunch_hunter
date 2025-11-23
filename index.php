@@ -1,7 +1,13 @@
 <?php
 session_start();
-//require_once 'src/model.php';
+/*
+require_once 'src/model.php';
 
+// データベースの接続情報
+Model::setDbConf([
+    'host'=>'mysql', 'user'=>'root','pass'=>'root','dbname'=>'pbl2025db'
+  ]);
+*/
 $no_header_ouput =[
     'usr_logout', 'usr_check', 'usr_save', 'rst_save', 'rev_save',
 ];
