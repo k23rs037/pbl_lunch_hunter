@@ -7,7 +7,7 @@ C:/php/lampp-docker8/htdocs/
    ├─ css/   CSSファイルが入っている
    ├─ docs/  データベースの構成等の説明が入っている
    ├─ src/   主要機能や画面の実装のPHPソースファイルが入っている
-      ├─ Model.php　データベース操作に関するクラス
+      ├─ model.php　データベース操作に関するクラス
       ・・・
    ├─ index.php　各機能への入り口。
    └─ README.md　このドキュメント
