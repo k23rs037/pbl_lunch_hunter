@@ -34,9 +34,9 @@ $reports = $reports ?? [
 <h1>通報済み口コミ一覧表示</h1>
 
 <div class="top-btn">
-    <button type="button" onclick="location.href='cancel_list.php'">通報取り消し一覧</button>
-    <button type="button" onclick="location.href='hidden_list.php'">非表示</button>
-    <button type="button" onclick="location.href='oldest_first.php'">投稿の古い順</button>
+    <button type="button" onclick="location.href=''">通報取り消し一覧</button>
+    <button type="button" onclick="location.href=''">非表示</button>
+    <button type="button" onclick="location.href=''">投稿の古い順</button>
 </div>
 
 <?php foreach ($reports as $r): ?>
