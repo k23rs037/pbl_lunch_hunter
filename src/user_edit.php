@@ -10,7 +10,8 @@ $user = $model->getDetail("user_id='" . $user_id . "'");
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update'])) {
     $data = [
         'user_name' => $_POST['user_name'],
-        'user_kana' => $_POST['user_kana']
+        'user_kana' => $_POST['user_kana'],
+        'account_name' => $_POST['account_name']
     ];
     $where = "user_id='" . $user_id . "'";
     $model->update($data, $where);
@@ -38,11 +39,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reset_password'])) {
   <title>管理者用ユーザー情報編集</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
-    form { max-width: 500px; margin: auto; }
+    form { max-width: 560px; margin: auto; }
     label { display: block; margin-top: 10px; }
     input { width: 100%; padding: 8px; margin-top: 5px; }
     button { margin-top: 15px; padding: 10px 15px; }
     .readonly { background-color: #f0f0f0; }
+    #popup_overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center;
+    }
+    #popup_box {
+      background: #fff; padding: 20px; border-radius: 8px; text-align: center;
+    }
+    #popup_box button { margin: 10px; }
+
   </style>
 </head>
 <body>
@@ -52,17 +62,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reset_password'])) {
     <label for="user_id">ユーザーID</label>
     <input type="text" id="user_id" name="user_id" value="<?= htmlspecialchars($user['user_id']) ?>" readonly class="readonly">
 
+    <label for="account_name">アカウント名</label>
+    <input type="text" id="account_name" name="account_name" value="<?= htmlspecialchars($user['user_account'] ?? '') ?>">
+
     <label for="user_name">氏名</label>
     <input type="text" id="user_name" name="user_name" value="<?= htmlspecialchars($user['user_name']) ?>">
 
     <label for="user_kana">氏名（カナ）</label>
     <input type="text" id="user_kana" name="user_kana" value="<?= htmlspecialchars($user['user_kana']) ?>">
 
-    <label for="usertype_id">ユーザ種別</label>
-    <input type="text" id="usertype_id" name="usertype_id" value="<?= $user['usertype_id'] == '1' ? '社員' : '管理者' ?>" readonly class="readonly">
 
     <div style="margin-top:20px;">
-      <button type="submit" name="update">更新</button>
+      <button type="submit" name="update">編集</button>
       <button type="submit" name="reset_password">パスワードリセット</button>
       <button type="button" onclick="window.location.href='user_list_admin.php'">戻る</button>
     </div>
@@ -70,5 +81,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reset_password'])) {
   <?php else: ?>
     <p>ユーザーが見つかりません。</p>
   <?php endif; ?>
+  <!-- パスワードリセット確認ポップアップ -->
+  <div id="popup_overlay">
+    <div id="popup_box">
+      <p>本当にパスワードをリセットしますか？</p>
+      <form method="post">
+        <button type="submit" name="reset_password">Yes</button>
+        <button type="button" onclick="hide_reset_popup()">No</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function show_reset_popup() {
+      document.getElementById("popup_overlay").style.display = "flex";
+    }
+    function hide_reset_popup() {
+      document.getElementById("popup_overlay").style.display = "none";
+    }
+  </script>
 </body>
 </html>
+
