@@ -2,7 +2,7 @@
 $reports = [
     [
         'アカウント名' => 'タックン',
-        '評価点'       => 2,
+        '評価点'       => '2',
         'ジャンル'     => 'ラーメン',
         '通報理由'     => '写真',
         'コメント'     => '店主が臭い',
@@ -11,7 +11,7 @@ $reports = [
     ],
     [
         'アカウント名' => 'アカウント名',
-        '評価点'       => 4,
+        '評価点'       => '4',
         'ジャンル'     => '店舗名',
         '通報理由'     => 'コメント',
         'コメント'     => 'コメント一部',
@@ -46,31 +46,31 @@ $reports = [
 <section class="report-box">
 
     <div class="left">
-        <h3><?= htmlspecialchars($r["account"]) ?></h3>
+        <h3><?php htmlspecialchars($r['アカウント名']) ?></h3>
 
         <div class="star">
-            評価：
+            <p>評価：<?php echo $r['評価点']?></p>
             <?php for ($i = 1; $i <= 5; $i++): ?>
-                <?= $i <= $r["rating"] ? "★" : "☆" ?>
+                <?php $r<=$r['評価点'] ? "★" : "☆" ?>
             <?php endfor; ?>
         </div>
 
-        <p><?= htmlspecialchars($r["comment"]) ?></p>
+        <p><?php htmlspecialchars($r['コメント']) ?></p>
 
         <div class="small">
-            投稿主：<?= htmlspecialchars($r["poster"]) ?><br>
-            通報者：<?= htmlspecialchars($r["reporter"]) ?>
+            <p>投稿主：<?php htmlspecialchars($r['通報者']) ?></p><br>
+            <p>通報者：<?php htmlspecialchars($r['本名']) ?></p>
         </div>
     </div>
 
     <div class="right">
-        <h3>▲ <?= htmlspecialchars($r["store"]) ?></h3>
-        <p>通報内容：<?= htmlspecialchars($r["report_reason"]) ?></p>
+        <h3>#<?php htmlspecialchars($r['ジャンル']) ?></h3>
+        <p>通報内容：<?php htmlspecialchars($r['通報理由']) ?></p>
 
         <!-- 遷移ボタン（ID を URL パラメータとして渡す） -->
-        <button type="button" onclick="location.href='detail.php?id=<?= $r['id'] ?>'">詳細</button>
-        <button type="button" onclick="location.href='cancel.php?id=<?= $r['id'] ?>'">取り消し</button>
-        <button type="button" onclick="location.href='delete.php?id=<?= $r['id'] ?>'">削除</button>
+        <button type="button" onclick="location.href='detail.php?id=<?php $r['id'] ?>'">詳細</button>
+        <button type="button" onclick="location.href='cancel.php?id=<?php $r['id'] ?>'">取り消し</button>
+        <button type="button" onclick="location.href='delete.php?id=<?php $r['id'] ?>'">削除</button>
     </div>
 
 </section>
