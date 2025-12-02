@@ -23,7 +23,7 @@ $reports = [
 ];
 ?>
 
-kkkkkkkkk
+<?php echo kkkkk ?>
 
 
 <!DOCTYPE html>
