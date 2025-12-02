@@ -47,7 +47,7 @@ $reports = array(
     <section class="report-box">
 
         <div class="left">
-            <h3><?php echo htmlspecialchars($report['アカウント名']) ?></h3>
+            <h3><?php echo htmlspecialchars($report[0]['アカウント名']) ?></h3>
 
             <div class="star">
                 <p>評価：<?php echo $report['評価点']?></p>
