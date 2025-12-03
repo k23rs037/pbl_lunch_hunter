@@ -1,152 +1,156 @@
 <?php
-// データベース接続設定（$pdoオブジェクト）を読み込むと仮定
-require_once 'db_connect.php';
-
-$error_message = '';
-
-// フォームがPOST送信された場合の処理
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
-    
-    // 1. データの受け取りと結合
-    $name = $_POST['store_name'] ?? '';
-    $address = $_POST['address'] ?? '';
-    $url = $_POST['url'] ?? null; // 任意項目はnullを許可
-    
-    // 電話番号を結合 (例: 092-123-4567)
-    $tel = ($_POST['tel1'] ?? '') . '-' . ($_POST['tel2'] ?? '') . '-' . ($_POST['tel3'] ?? '');
-
-    // チェックボックスの項目をカンマ区切りの文字列に変換
-    $holidays = implode(',', $_POST['holiday'] ?? []);
-    $genres = implode(',', $_POST['genre'] ?? []);
-    $payments = implode(',', $_POST['payment'] ?? []);
-    
-    // 営業時間
-    $open_time = $_POST['open_time'] ?? '';
-    $close_time = $_POST['close_time'] ?? '';
-    $hours = $open_time . '～' . $close_time;
-
-    // 2. 入力検証 (必須項目のチェック)
-    if (empty($name) || empty($address) || empty($tel) || empty($holidays) || empty($genres) || empty($payments)) {
-        $error_message = "全ての必須項目（*必須）を入力してください。";
-    } 
-    // TODO: 他の検証（電話番号の形式、時間の妥当性など）
-
-    // 3. 画像ファイル処理 (13)
-    $photo_path = null;
-    if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
-        $file_tmp_path = $_FILES['photo']['tmp_name'];
-        $file_name = $_FILES['photo']['name'];
-        $new_file_name = uniqid() . '-' . basename($file_name); // ユニークなファイル名を生成
-        $upload_dir = 'uploads/'; // 保存先ディレクトリ
-        
-        if (move_uploaded_file($file_tmp_path, $upload_dir . $new_file_name)) {
-            $photo_path = $upload_dir . $new_file_name;
-        } else {
-            $error_message = "ファイルのアップロードに失敗しました。";
-        }
-    }
-
-    // 4. データベースへの挿入 (エラーがない場合のみ)
-    if (empty($error_message)) {
-        try {
-            $sql = "INSERT INTO stores (name, address, tel, hours, genres, holidays, payments, url, photo_path) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute([
-                $name, 
-                $address, 
-                $tel, 
-                $hours,
-                $genres,
-                $holidays,
-                $payments,
-                $url,
-                $photo_path
-            ]);
-
-            // 登録成功後、店舗一覧画面などへリダイレクト
-            header('Location: store_list.php?message=registered');
-            exit;
-
-        } catch (PDOException $e) {
-            $error_message = "データベースエラー: 登録に失敗しました。" . $e->getMessage();
-            // TODO: アップロードしたファイルを削除するロールバック処理
-        }
-    }
-}
-
-// ... ここからHTMLコードが続く ...
+$form_action_url = 'store_registration.php';
 ?>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lunch Hunter - 店舗登録</title>
+    <style>
+        .form-group { margin-bottom: 20px; }
+        .required-star { color: red; margin-left: 5px; font-weight: bold; }
+        .optional-hash { color: blue; margin-left: 5px; font-weight: bold; }
+        .header-menu a { margin-right: 15px; }
+        .registration-container {
+            display: flex;
+            gap: 40px;
+        }
+        .left-col, .right-col {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
 
-<main>
-    <h2>店舗登録</h2>
-    
-    <form action="store_register.php" method="POST" enctype="multipart/form-data">
-        
-        <section id="left-column">
-            <div>
-                <label for="store_name">店舗名 *必須</label>
-                <input type="text" id="store_name" name="store_name" value="<?php echo htmlspecialchars($_POST['store_name'] ?? ''); ?>" required maxlength="30">
-            </div>
-            
-            <div>
-                <label for="address">住所 *必須</label>
-                <input type="text" id="address" name="address" value="<?php echo htmlspecialchars($_POST['address'] ?? ''); ?>" required>
-            </div>
+    <header>
+        <h1>Lunch Hunter</h1>
+        <nav class="header-menu">
+            <button>ログアウト</button> <button>MY PAGE</button> <button>店舗一覧</button> <button>店舗登録</button> </nav>
+        <hr>
+    </header>
 
-            <div>
-                <p>店休日 *必須</p>
-                <?php $days = ['日', '月', '火', '水', '木', '金', '土', '年中無休', '未定']; ?>
-                <?php $selected_holidays = $_POST['holiday'] ?? []; ?>
-                <?php foreach ($days as $day): ?>
-                    <label>
-                        <input type="checkbox" name="holiday[]" value="<?php echo $day; ?>" 
-                               <?php echo in_array($day, $selected_holidays) ? 'checked' : ''; ?>> 
-                        <?php echo $day; ?>
-                    </label>
-                <?php endforeach; ?>
-            </div>
-            
-            <div>
-                <label for="open_time">営業時間 *必須</label>
-                <select id="open_time" name="open_time" required>
-                    <?php 
-                    $start_time = 9; $end_time = 18; 
-                    for ($i = 0; $i < 24; $i++): 
-                        $time = sprintf('%02d:00', $i);
-                    ?>
-                        <option value="<?php echo $time; ?>" 
-                                <?php echo ($_POST['open_time'] ?? '09:00') === $time ? 'selected' : ''; ?>>
-                            <?php echo $time; ?>
-                        </option>
-                    <?php endfor; ?>
-                </select>
-                <span>～</span>
-                <select id="close_time" name="close_time" required>
-                    </select>
-            </div>
-            
-            <div>
-                <label for="tel1">電話番号 *必須</label>
-                <input type="tel" id="tel1" name="tel1" value="<?php echo htmlspecialchars($_POST['tel1'] ?? ''); ?>" required size="4" maxlength="4">-
-                <input type="tel" name="tel2" value="<?php echo htmlspecialchars($_POST['tel2'] ?? ''); ?>" required size="4" maxlength="4">-
-                <input type="tel" name="tel3" value="<?php echo htmlspecialchars($_POST['tel3'] ?? ''); ?>" required size="4" maxlength="4">
-            </div>
+    <main>
+        <h2>店舗登録</h2>
 
-            <div>
-                <p>ジャンル *必須</p>
-                <?php $genres = ['うどん', 'ラーメン', 'その他麺類', 'ファストフード', /*...*/, 'カレー', 'その他']; ?>
-                <?php $selected_genres = $_POST['genre'] ?? []; ?>
-                <?php foreach ($genres as $genre): ?>
-                    <label>
-                        <input type="checkbox" name="genre[]" value="<?php echo $genre; ?>"
-                               <?php echo in_array($genre, $selected_genres) ? 'checked' : ''; ?>>
-                        <?php echo $genre; ?>
-                    </label>
-                <?php endforeach; ?>
-            </div>
+        <form action="<?php echo htmlspecialchars($form_action_url); ?>" method="post" enctype="multipart/form-data">
             
-        </section>
-        
-        <section id="right-column
+            <div class="registration-container">
+                
+                <div class="left-col">
+                    <div class="form-group">
+                        <label for="store_name">店舗名</label>
+                        <span class="required-star">*必須</span>
+                        <input type="text" id="store_name" name="store_name" value="マクドナルド ●▲店" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="address">住所</label>
+                        <span class="required-star">*必須</span>
+                        <input type="text" id="address" name="address" value="福岡県福岡市●▲区●-1-2-3" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>定休日</label>
+                        <span class="required-star">*必須</span><br>
+                        <label><input type="checkbox" name="holiday[]" value="日"> 日</label>
+                        <label><input type="checkbox" name="holiday[]" value="月"> 月</label>
+                        <label><input type="checkbox" name="holiday[]" value="火"> 火</label>
+                        <label><input type="checkbox" name="holiday[]" value="水"> 水</label>
+                        <label><input type="checkbox" name="holiday[]" value="木"> 木</label>
+                        <label><input type="checkbox" name="holiday[]" value="金"> 金</label>
+                        <label><input type="checkbox" name="holiday[]" value="土"> 土</label>
+                        <label><input type="checkbox" name="holiday[]" value="年中無休"> 年中無休</label>
+                        <label><input type="checkbox" name="holiday[]" value="未定"> 未定</label>
+                    </div>
+
+                    <div class="form-group">
+                        <label>営業時間</label>
+                        <span class="required-star">*必須</span><br>
+                        <select name="open_time" required>
+                            <option value="9:00">9:00</option>
+                            </select>
+                        ～
+                        <select name="close_time" required>
+                            <option value="17:30">17:30</option>
+                            </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tel">電話番号</label>
+                        <span class="required-star">*必須</span><br>
+                        <input type="tel" name="tel_part1" size="3" required> -
+                        <input type="tel" name="tel_part2" size="4" required> -
+                        <input type="tel" name="tel_part3" size="4" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>ジャンル</label>
+                        <span class="required-star">*必須</span><br>
+                        <label><input type="checkbox" name="genre[]" value="うどんラーメン"> うどんラーメン</label>
+                        <label><input type="checkbox" name="genre[]" value="その他麺類"> その他麺類</label>
+                        <label><input type="checkbox" name="genre[]" value="ファストフード"> ファストフード</label>
+                        <label><input type="checkbox" name="genre[]" value="和食"> 和食</label>
+                        <label><input type="checkbox" name="genre[]" value="洋食"> 洋食</label>
+                        <label><input type="checkbox" name="genre[]" value="定食"> 定食</label>
+                        <label><input type="checkbox" name="genre[]" value="焼肉"> 焼肉</label>
+                        <label><input type="checkbox" name="genre[]" value="中華"> 中華</label>
+                        <label><input type="checkbox" name="genre[]" value="カレー"> カレー</label>
+                        <label><input type="checkbox" name="genre[]" value="その他"> その他</label>
+                    </div>
+
+                    <div class="form-group">
+                        <label>時間選択</label>
+                        <span class="required-star">*必須</span>
+                        <select size="10" name="required_time" required>
+                            <option value="0:00">0:00</option>
+                            <option value="0:30">0:30</option>
+                            <option value="1:00">1:00</option>
+                            <option value="1:30" selected>1:30</option>
+                            <option value="2:00">2:00</option>
+                            <option value="2:30">2:30</option>
+                            <option value="3:00">3:00</option>
+                            <option value="3:30">3:30</option>
+                            <option value="4:00">4:00</option>
+                            <option value="4:30">4:30</option>
+                        </select>
+                    </div>
+
+                </div><div class="right-col">
+                    
+                    <div class="form-group">
+                        <label>支払い方法</label>
+                        <span class="required-star">*必須</span><br>
+                        <label><input type="checkbox" name="payment[]" value="現金"> 現金</label>
+                        <label><input type="checkbox" name="payment[]" value="QRコード"> QRコード</label>
+                        <label><input type="checkbox" name="payment[]" value="電子マネー"> 電子マネー</label>
+                        <label><input type="checkbox" name="payment[]" value="クレジットカード"> クレジットカード</label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="url">URL</label>
+                        <span class="optional-hash">#任意</span>
+                        <input type="url" id="url" name="url">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="photo_file">写真 (外観)</label>
+                        <span class="optional-hash">#任意</span><br>
+                        <input type="file" id="photo_file" name="photo_file">
+                    </div>
+
+                    <div class="form-group">
+                        <div style="border: 1px solid #ccc; height: 150px; padding: 10px;">
+                            プレビュー
+                        </div>
+                    </div>
+
+                </div></div><button type="button" onclick="confirm('この店舗情報を削除しますか？')" style="float: right;">削除</button>
+
+            <button type="submit" name="register" style="float: right; margin-right: 10px;">登録</button>
+            
+        </form>
+
+    </main>
+</body>
+</html>
