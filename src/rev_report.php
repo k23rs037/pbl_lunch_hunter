@@ -71,9 +71,16 @@ $reports = array(
             <!-- 遷移ボタン（ID を URL パラメータとして渡す） -->
             <button type="button" onclick="location.href='detail.php?id=<?php echo $report['id']?? 0 ?>'">詳細</button>
             <button type="button" onclick="location.href='cancel.php?id=<?php echo $report['id']?? 0 ?>'">取り消し</button>
-            <button type="button" onclick="location.href='delete.php?id=<?php echo $report['id']?? 0 ?>'">削除</button>
+            <button class="btn0" popovertarget="my">削除</button>
+            <!--ポップアップ-->
+                <div class="pop" popover id="my">
+                    <p>本当に削除しますか？</p>
+                    <div class="yn">
+                        <button type="button" onclick="location.href='cancel.php?id=<?php echo $report['id']?? 0 ?>'">yes</button>
+                        <button type="button" onclick="document.getElementById('my').hidePopover()">no</button>
+                    </div>                   
+                </div>
         </div>
-
     </section>
 <?php endforeach; ?>
 
