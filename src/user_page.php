@@ -46,16 +46,6 @@ $showShops = array_slice($shops, $start, $perPage);
 
 ?>
 
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
-    <title>MY PAGE</title>
-</head>
-<body>
 <?php foreach ($infos as $info): ?>
     <div class="main">
         <h1>マイページ</h1>
@@ -119,5 +109,3 @@ $showShops = array_slice($shops, $start, $perPage);
         <?php endif; ?>
     <?php endfor; ?>
 </div>
-</body>
-</html>
