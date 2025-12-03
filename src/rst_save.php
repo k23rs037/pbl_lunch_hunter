@@ -1,6 +1,5 @@
 <?php
 require_once 'model.php';
-session_start();
 
 $error = false;
 if(empty($_POST['rst_name'])
