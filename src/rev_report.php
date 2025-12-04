@@ -21,7 +21,7 @@ $reports = array(
         '投稿主'=> '投稿主',
     ],
     [
-        'id'=> '1',
+        'id'=> '3',
         'アカウント名'=> 'タックン',
         '評価点'=> '3',
         'ジャンル'=> 'ラーメン',
@@ -31,7 +31,7 @@ $reports = array(
         '投稿主'=> '美輪 明宏',
     ],
     [
-        'id'=> '2',
+        'id'=> '4',
         'アカウント名'=> 'アカウント名',
         '評価点'=> '4',
         'ジャンル'=> 'ジャンル',
@@ -91,13 +91,13 @@ $reports = array(
 
             <button type="button" onclick="location.href='/src/rev_detail.php'">詳細</button>
             <button type="button" onclick="location.href='cancel.php'">取り消し</button>
-            <button class="btn0" popovertarget="my">削除</button>
+            <button class="btn0" popovertarget="my-<?= $report['id'] ?>">削除</button>
             
-            <div class="pop" popover="manual" id="my">
+            <div class="pop" popover="manual" id="my-<?= $report['id'] ?>">
                 <p>本当に削除しますか？</p>
                     <div class="yn">
                         <button type="button" onclick="location.href='cancel.php?id=<?php echo $report['id'] ?? 0 ?>'">yes</button>
-                        <button type="button" popovertarget="my" popovertargetaction="hide">no</button>
+                        <button type="button" onclick="document.getElementById('my-<?= $report['id'] ?>').hidePopover()">no</button>
                      </div>
             </div>
         </div>
@@ -133,7 +133,15 @@ $reports = array(
                     <p>通報内容：${report['通報理由']}</p>
                     <button type="button" onclick="location.href='detail.php?id=${report['id']}'">詳細</button>
                     <button type="button" onclick="location.href='cancel.php?id=${report['id']}'">取り消し</button>
-                    <button class="btn0" popovertarget="my">削除</button>
+                    <button class="btn0" popovertarget="my-<?= $report['id'] ?>">削除</button>
+            
+                    <div class="pop" popover="manual" id="my-<?= $report['id'] ?>">
+                        <p>本当に削除しますか？</p>
+                        <div class="yn">
+                            <button type="button" onclick="location.href='cancel.php?id=<?php echo $report['id'] ?? 0 ?>'">yes</button>
+                            <button type="button" onclick="document.getElementById('my-<?= $report['id'] ?>').hidePopover()">no</button>
+                        </div>
+                    </div>
                 </div>
             </section>
             `;
