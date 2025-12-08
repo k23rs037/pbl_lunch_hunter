@@ -7,7 +7,7 @@ Model::setDbConf([
   ]);
   
 $no_header_ouput =[
-    'user_logout', 'user_check', 'user_save', 'rst_save', 'rev_save',
+    'user_logout', 'user_check', 'user_save', 'rst_save', 'rev_save','user_input_save','user_myedit_save',
 ];
 
 if(isset($_SESSION['usertype_id'])){

@@ -5,7 +5,7 @@
 -- 口コミ
 create table t_review(
     review_id SERIAL not null comment '口コミID'
-    , eval_pint INT not null comment '評価点'
+    , eval_point INT not null comment '評価点'
     , review_comment VARCHAR(250) comment 'コメント'
     , rst_id BIGINT not null comment '書き込まれた店舗'
     , user_id CHAR(16) not null comment '登録ユーザID'
