@@ -3,7 +3,7 @@ $reports = array(
     [
         'id'=> '1',
         'アカウント名'=> 'タックン',
-        '評価点'=> '1',
+        '評価点'=> '3.7',
         'ジャンル'=> 'ラーメン',
         '通報理由'=> '写真',
         'コメント'=> '店主が臭い',
@@ -103,6 +103,36 @@ $reports = array(
         margin: 40%;
     }
 
+    .star-rating {
+    --rate: 0;        /* 0〜5 の小数(0.1 刻みなど)を直接入れる */
+    --size: 20px;
+    --star-color: #ccc;
+    --star-fill: gold;
+
+    font-size: var(--size);
+    font-family: "Arial", sans-serif;
+    position: relative;
+    display: inline-block;
+    line-height: 1;
+    }
+
+    .star-rating::before {
+        content: "★★★★★";
+        color: var(--star-color);
+    }
+
+    .star-rating::after {
+        content: "★★★★★";
+        color: var(--star-fill);
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: calc(var(--rate) * 20%);  /* ★ 小数点をそのまま使用（0.1 → 2%） */
+        overflow: hidden;
+        white-space: nowrap;
+    }
+
+
 
 </style>
 
@@ -123,11 +153,17 @@ $reports = array(
         <div class="left">
             <h3><?php echo htmlspecialchars($report['アカウント名']) ?></h3>
             <div class="star">
-                <div>評価：</div>
+                <!--<div>評価：</div>
                 <?php for ($i = 1; $i <= 5; $i++): ?>
                     <?php echo $i<=(int)$report['評価点'] ? "★" : "☆" ?>
                 <?php endfor; ?>
-                <div><?php echo $report['評価点']?></div>
+                <div><?php echo $report['評価点']?></div>-->
+
+                <div>評価：</div>
+                <?php $rate = (float)$report['評価点']; ?>
+                <div class="star-rating" style="--rate: <?= $rate ?>;"></div>
+                <div><?= htmlspecialchars($report['評価点']) ?></div>
+
             </div>
             <div class="kome">
                 <div><?php echo htmlspecialchars($report['コメント']) ?></div>
@@ -175,7 +211,7 @@ $reports = array(
                     <h3>${report['アカウント名']}</h3>
                     <div class="star">
                         <p>評価：${report['評価点']}</p>
-                        ${"★".repeat(report['評価点']) + "☆".repeat(5 - report['評価点'])}
+                        <div class="star-rating" style="--rate:${parseFloat(report['評価点'])}"></div>
                     </div>
                     <p>${report['コメント']}</p>
                     <div class="small">
