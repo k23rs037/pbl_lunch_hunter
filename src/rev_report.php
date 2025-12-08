@@ -55,6 +55,10 @@ $reports = array(
 <body>
 
 <style>
+    *{
+        margin:0;
+    }
+
     h1{
         text-align: center;
     }
@@ -83,10 +87,20 @@ $reports = array(
         padding: 8px;      
         margin-top: 5px;   
         border-radius: 5px;
+        background-color:red;
     }
 
     .small{
         font-size:12px
+    }
+
+    .btn2{
+        display: flex;
+        flex-direction: column;
+    }
+
+    .pop{
+        margin: 40%;
     }
 
 
@@ -128,11 +142,12 @@ $reports = array(
         <div class="right">
             <h3>#<?php echo htmlspecialchars($report['ジャンル']) ?></h3>
             <p>通報内容：<?php echo htmlspecialchars($report['通報理由']) ?></p>
+            <div class="btn2">
+                <button type="button" onclick="location.href='/src/rev_detail.php'">詳細</button>
+                <button type="button" onclick="location.href='cancel.php'">取り消し</button>
+                <button class="btn0" popovertarget="my-<?= $report['id'] ?>">削除</button>
+            </div>
 
-            <button type="button" onclick="location.href='/src/rev_detail.php'">詳細</button>
-            <button type="button" onclick="location.href='cancel.php'">取り消し</button>
-            <button class="btn0" popovertarget="my-<?= $report['id'] ?>">削除</button>
-            
             <div class="pop" popover="manual" id="my-<?= $report['id'] ?>">
                 <p>本当に削除しますか？</p>
                     <div class="yn">
