@@ -3,6 +3,7 @@
 $accounts = [
     ['name' => '斎藤巧', 'kana' => 'サイトウ コウ', 'id' => '390001', 'account' => 'タックン'],
     ['name' => '田中花子', 'kana' => 'タナカ ハナコ', 'id' => '390002', 'account' => 'ハナちゃん'],
+    ['name' => '田村時丸', 'kana' => 'タムラ トキマル', 'id' => '390003', 'account' => '坂上田村丸'],
     // ...最大10件表示
 ];
 ?>
@@ -55,7 +56,7 @@ $accounts = [
             <td><?= htmlspecialchars($user['name']) ?>（<?= htmlspecialchars($user['kana']) ?>）</td>
             <td><?= htmlspecialchars($user['id']) ?></td>
             <td><?= htmlspecialchars($user['account']) ?></td>
-            <td><a href="user_edit.php?id=<?= urlencode($user['id']) ?>">編集</a></td>
+            <td><a href="?do=user_edit.php?id=<?= urlencode($user['id']) ?>">編集</a></td>
         </tr>
         <?php endforeach; ?>
     </tbody>
