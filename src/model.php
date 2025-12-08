@@ -104,7 +104,17 @@ class Model
         $keys = array_keys($data);
         $values = array_map(fn ($v) => is_string($v) ? "'{$v}'" : $v, array_values($data));
         $values = array_map(fn ($k, $v) => "{$k}={$v}", array_combine($keys, $values));
-        $sql = "UPDATE {$this->table} SET {$values} WHERE {$where}";
+        $setStr = implode(',',$values);
+        if (is_array($where)) {
+            $whereParts = [];
+            foreach ($where as $key => $value) {
+                $whereParts[] = "$key = '$value'";
+            }
+            $whereStr = implode(' AND ', $whereParts);
+        } else {
+            $whereStr = $where;
+        }
+        $sql = "UPDATE {$this->table} SET {$setStr} WHERE {$whereStr}";
         $this->execute($sql);
         return $this->db->affected_rows;
     }
@@ -115,7 +125,16 @@ class Model
      */
     public function delete($where)
     {
-        $sql = "DELETE FROM {$this->table} WHERE {$where}";
+        if (is_array($where)) {
+            $whereParts = [];
+            foreach ($where as $key => $value) {
+                $whereParts[] = "$key = '$value'";
+            }
+            $whereStr = implode(' AND ', $whereParts);
+        } else {
+            $whereStr = $where;
+        }
+        $sql = "DELETE FROM {$this->table} WHERE {$whereStr}";
         $this->execute($sql);
         return $this->db->affected_rows;
     }
