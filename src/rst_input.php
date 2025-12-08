@@ -14,35 +14,35 @@
 
             <div class="left-col">
                 <div class="form-group">
-                    <label for="store_name">店舗名</label>
+                    <label for="rst_name">店舗名</label>
                     <span class="required-star">*必須</span>
-                    <input type="text" id="store_name" name="store_name" required>
+                    <input type="text" id="rst_name" name="rst_name" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="address">住所</label>
+                    <label for="rst_address">住所</label>
                     <span class="required-star">*必須</span>
-                    <input type="text" id="address" name="address" required>
+                    <input type="text" id="rst_address" name="rst_address" required>
                 </div>
 
                 <div class="form-group">
                     <label>定休日</label>
                     <span class="required-star">*必須</span><br>
-                    <label><input type="checkbox" name="holiday[]" value=1> 日</label>
-                    <label><input type="checkbox" name="holiday[]" value=2> 月</label>
-                    <label><input type="checkbox" name="holiday[]" value=4> 火</label>
-                    <label><input type="checkbox" name="holiday[]" value=8> 水</label>
-                    <label><input type="checkbox" name="holiday[]" value=16> 木</label>
-                    <label><input type="checkbox" name="holiday[]" value=32> 金</label>
-                    <label><input type="checkbox" name="holiday[]" value=64> 土</label>
-                    <label><input type="checkbox" name="holiday[]" value="128"> 年中無休</label>
-                    <label><input type="checkbox" name="holiday[]" value="256"> 未定</label>
+                    <label><input type="checkbox" name="rst_holiday[]" value=1> 日</label>
+                    <label><input type="checkbox" name="rst_holiday[]" value=2> 月</label>
+                    <label><input type="checkbox" name="rst_holiday[]" value=4> 火</label>
+                    <label><input type="checkbox" name="rst_holiday[]" value=8> 水</label>
+                    <label><input type="checkbox" name="rst_holiday[]" value=16> 木</label>
+                    <label><input type="checkbox" name="rst_holiday[]" value=32> 金</label>
+                    <label><input type="checkbox" name="rst_holiday[]" value=64> 土</label>
+                    <label><input type="checkbox" name="rst_holiday[]" value="128"> 年中無休</label>
+                    <label><input type="checkbox" name="rst_holiday[]" value="256"> 未定</label>
                 </div>
 
                 <div class="form-group">
                     <label>営業時間</label>
                     <span class="required-star">*必須</span><br>
-                    <select name="open_time" required>
+                    <select name="start_time" required>
                         <option value="0:00">0:00</option>
                         <option value="0:30">0:30</option>
                         <option value="1:00">1:00</option>
@@ -94,7 +94,7 @@
                         <option value="24:00">24:00</option>
                     </select>
 
-                    <select name="close_time" required>
+                    <select name="end_time" required>
                         <option value="0:00">0:00</option>
                         <option value="0:30">0:30</option>
                         <option value="1:00">1:00</option>
@@ -177,10 +177,10 @@
                 <div class="form-group">
                     <label>支払い方法</label>
                     <span class="required-star">*必須</span><br>
-                    <label><input type="checkbox" name="payment[]" value="1"> 現金</label>
-                    <label><input type="checkbox" name="payment[]" value="2"> QRコード</label>
-                    <label><input type="checkbox" name="payment[]" value="4"> 電子マネー</label>
-                    <label><input type="checkbox" name="payment[]" value="8"> クレジットカード</label>
+                    <label><input type="checkbox" name="rst_pay[]" value="1"> 現金</label>
+                    <label><input type="checkbox" name="rst_pay[]" value="2"> QRコード</label>
+                    <label><input type="checkbox" name="rst_pay[]" value="4"> 電子マネー</label>
+                    <label><input type="checkbox" name="rst_pay[]" value="8"> クレジットカード</label>
                 </div>
 
                 <div class="form-group">
