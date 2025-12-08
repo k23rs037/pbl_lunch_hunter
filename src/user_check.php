@@ -5,7 +5,7 @@ $model = new User();
 
 $user_id = $_POST['user_id'];
 $user_password = $_POST['user_password'];
-$where = "user_id='{$user_id}' AND password='{$user_password}'";
+$where = ['user_id'=>$user_id ,'password' =>$user_password];
 $user = $model->get_userDetail($where);
 if($user){
     $_SESSION['user_id'] = $user['user_id'];

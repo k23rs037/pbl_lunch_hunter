@@ -26,6 +26,7 @@ if (isset($_SESSION['usertype_id'])){
   if ($_SESSION['usertype_id']=== '9'){  //管理者
     $menu = array(   //管理者メニュー
       '店舗一覧'  => 'rst_list',
+      'ユーザ登録' => 'user_input',
       'ユーザ一覧'  => 'user_list',
       '通報済み口コミ一覧' => 'rev_report',
     );

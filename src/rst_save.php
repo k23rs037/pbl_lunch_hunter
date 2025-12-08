@@ -30,7 +30,7 @@ if(!$error){
         'rst_holiday'=> $holiday,
         'rst_pay'=> isset($_POST['rst_pay']) ? array_sum($_POST['rst_pay']) : null,
         'rst_info'=> $_POST['rst_info'] ?? null,
-        'photo'=> $_POST['photo'] ?? null,
+        'photo_file'=> $_POST['photo_file'] ?? null,
         'user_id'=> $_POST['user_id'],
         'discount'=> false
     ];

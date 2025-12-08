@@ -1,110 +1,101 @@
 <?php
+session_start();
+$user_id = $_SESSION['user_id'] ?? 'u001'; // 仮のログインユーザーID
+$user_name = $_SESSION['user_name'] ?? '智悠'; // 仮の表示名
+
 // 仮の店舗データ
 $store = [
-  'store_id' => '001',
-  'store_name' => '九段製麺 九産大前店',
-  'address' => '〒813-0004 福岡市東区松香台２丁目２−４',
+  'store_name' => '丸兎製麺 九産大前店',
+  'address' => '福岡市東区〇丁目20-4 ◇◇ビル2階',
   'tel' => '092-000-0000',
-  'hours' => '11:00〜22:00',
-  'holiday' => '不定休',
-  'url' => 'https://www.example.com',
-  'payment' => '現金・電子マネー・クレジットカード',
-  'photo' => 'photo_sample.jpg',
-  'review_avg' => '4.2',
-  'review_count' => '128'
+  'hours' => '9:30〜11:00',
+  'holiday' => '火曜日',
+  'genre' => 'うどん、和食',
+  'payment' => '現金 QRコード 電子マネー クレジットカード',
+  'url' => 'https://example.com',
+  'photo' => 'photo_sample.jpg'
 ];
 
 // 仮の口コミデータ
 $reviews = [
-  [
-    'genre' => 'ラーメン',
-    'account_name' => '社員A',
-    'rating' => 4,
-    'comment' => 'スープが濃厚で美味しい！',
-    'photo' => 'ramen.jpg'
-  ],
-  [
-    'genre' => 'チャーハン',
-    'account_name' => '社員B',
-    'rating' => 5,
-    'comment' => 'パラパラで最高でした！',
-    'photo' => 'fried_rice.jpg'
-  ],
-  [
-    'genre' => '餃子',
-    'account_name' => '社員C',
-    'rating' => 3,
-    'comment' => '皮が少し厚めでしたがジューシー。',
-    'photo' => ''
-  ]
+  ['review_id' => 'r001', 'account_name' => '社員A', 'user_id' => 'u001', 'rating' => 5, 'comment' => '出汁が最高でした！', 'photo' => 'udon.jpg'],
+  ['review_id' => 'r002', 'account_name' => '社員B', 'user_id' => 'u002', 'rating' => 4, 'comment' => '雰囲気が落ち着いていて良かったです。', 'photo' => ''],
+  ['review_id' => 'r003', 'account_name' => '社員C', 'user_id' => 'u003', 'rating' => 3, 'comment' => 'もう少し量が欲しいです。', 'photo' => 'interior.jpg']
 ];
+
+// 総合評価の算出
+$total_rating = array_sum(array_column($reviews, 'rating'));
+$review_count = count($reviews);
+$review_avg = $review_count > 0 ? round($total_rating / $review_count, 1) : 0;
+$review_stars = str_repeat('★', floor($review_avg)) . str_repeat('☆', 5 - floor($review_avg));
+
+// メッセージ処理（仮）
+$message = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+  if (isset($_POST['submit_review'])) {
+    $message = '口コミを投稿しました。';
+  } elseif (isset($_POST['delete_review'])) {
+    $message = '口コミを削除しました。';
+  } elseif (isset($_POST['report_review'])) {
+    $message = '口コミを通報しました。';
+  }
+}
 ?>
 <!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>店舗詳細 - Lunch Hunter</title>
+  <title>店舗詳細 - Lunch Hunt</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
     .container { max-width: 900px; margin: auto; }
-    .info, .review, .form_area { margin-bottom: 30px; }
-    label { font-weight: bold; display: block; margin-top: 10px; }
-    img { max-width: 100%; height: auto; margin-top: 10px; }
-    .nav_buttons button { margin-right: 10px; }
+    .section { margin-bottom: 30px; }
     .review_card { border: 1px solid #ccc; padding: 10px; margin-top: 10px; border-radius: 5px; }
+    .message { color: green; font-weight: bold; }
+    .warning { color: red; }
   </style>
+  <script>
+    function confirmPost() {
+      return confirm('口コミを投稿してよろしいですか？');
+    }
+  </script>
 </head>
 <body>
   <div class="container">
-    <h1>Lunch Hunter</h1>
-    <div class="nav_buttons">
-      <button onclick="location.href='logout.php'">ログアウト</button>
-      <button onclick="location.href='mypage.php'">マイページ</button>
-      <button onclick="location.href='store_edit.php?store_id=<?= $store['store_id'] ?>'">編集</button>
-      <button onclick="location.href='store_list.php'">店舗一覧</button>
-    </div>
+    <p><strong>ログイン中：</strong><?= htmlspecialchars($user_name) ?>（ID: <?= htmlspecialchars($user_id) ?>）</p>
 
-    <h2>店舗詳細</h2>
-    <div class="info">
-      <label>店舗名</label>
-      <p><?= $store['store_name'] ?></p>
-
-      <label>住所</label>
-      <p><?= $store['address'] ?></p>
-
-      <label>電話番号</label>
-      <p><?= $store['tel'] ?></p>
-
-      <label>営業時間</label>
-      <p><?= $store['hours'] ?></p>
-
-      <label>店休日</label>
-      <p><?= $store['holiday'] ?></p>
-
-      <label>URL</label>
-      <a href="<?= $store['url'] ?>" target="_blank">公式サイト</a>
-
-      <label>支払方法</label>
-      <p><?= $store['payment'] ?></p>
-
-      <label>外観写真</label>
+    <!-- 店舗情報 -->
+    <div class="section">
+      <h2>店舗詳細</h2>
+      <p><strong>店舗名：</strong><?= $store['store_name'] ?></p>
+      <p><strong>住所：</strong><?= $store['address'] ?></p>
+      <p><strong>電話番号：</strong><?= $store['tel'] ?></p>
+      <p><strong>営業時間：</strong><?= $store['hours'] ?></p>
+      <p><strong>店休日：</strong><?= $store['holiday'] ?></p>
+      <p><strong>ジャンル：</strong><?= $store['genre'] ?></p>
+      <p><strong>支払方法：</strong><?= $store['payment'] ?></p>
+      <p><strong>URL：</strong><a href="<?= $store['url'] ?>" target="_blank">公式サイト</a></p>
       <img src="<?= $store['photo'] ?>" alt="店舗外観">
-
-      <label>総合評価</label>
-      <p><?= $store['review_avg'] ?> / 5（<?= $store['review_count'] ?>人）</p>
     </div>
 
-    <div class="form_area">
-      <h3>評価投稿</h3>
-      <form method="post" enctype="multipart/form-data">
-        <label for="review_title">タイトル</label>
-        <input type="text" id="review_title" name="review_title">
+    <!-- 総合評価 -->
+    <div class="section">
+      <h3>総合評価</h3>
+      <p><?= $review_stars ?>（<?= $review_avg ?> / 5、<?= $review_count ?>件）</p>
+    </div>
 
-        <label for="review_comment">コメント（250文字以内）</label>
-        <textarea id="review_comment" name="review_comment" maxlength="250"></textarea>
+    <!-- 投稿フォーム -->
+    <div class="section">
+      <h3>コメント投稿</h3>
+      <form method="post" enctype="multipart/form-data" onsubmit="return confirmPost();">
+        <label for="comment">コメント（250文字以内）</label>
+        <textarea id="comment" name="comment" maxlength="250"></textarea>
 
-        <label for="review_rating">評価（1〜5）</label>
-        <select id="review_rating" name="review_rating">
+        <label for="photo">写真（任意）</label>
+        <input type="file" id="photo" name="photo">
+
+        <label for="rating">評価（1〜5）</label>
+        <select id="rating" name="rating">
           <option value="1">★☆☆☆☆</option>
           <option value="2">★★☆☆☆</option>
           <option value="3">★★★☆☆</option>
@@ -112,23 +103,47 @@ $reviews = [
           <option value="5">★★★★★</option>
         </select>
 
-        <label for="review_photo">写真（任意）</label>
-        <input type="file" id="review_photo" name="review_photo">
-
-        <button type="submit" name="submit_review">評価する</button>
+        <button type="submit" name="submit_review">投稿</button>
+        <button type="submit" name="delete_review">投稿削除</button>
       </form>
     </div>
 
-    <div class="review">
-      <h3>口コミ一覧</h3>
+    <!-- メッセージ表示 -->
+    <?php if (!empty($message)): ?>
+      <p class="message"><?= $message ?></p>
+    <?php endif; ?>
+
+    <!-- 口コミ一覧 -->
+    <div class="section">
+      <h3>口コミ</h3>
       <?php foreach ($reviews as $r): ?>
         <div class="review_card">
-          <p><strong>ジャンル：</strong><?= $r['genre'] ?></p>
           <p><strong>アカウント：</strong><?= $r['account_name'] ?></p>
-          <p><strong>評価：</strong> <?= str_repeat('★', $r['rating']) ?><?= str_repeat('☆', 5 - $r['rating']) ?></p>
+          <p><strong>評価：</strong><?= str_repeat('★', $r['rating']) ?><?= str_repeat('☆', 5 - $r['rating']) ?></p>
           <p><strong>コメント：</strong><?= $r['comment'] ?></p>
           <?php if (!empty($r['photo'])): ?>
-            <img src="<?= $r['photo'] ?>" alt="料理写真">
+            <img src="<?= $r['photo'] ?>" alt="写真">
+          <?php endif; ?>
+
+          <!-- 自分の投稿なら編集・削除 -->
+          <?php if ($r['user_id'] === $user_id): ?>
+            <form method="post">
+              <input type="hidden" name="review_id" value="<?= $r['review_id'] ?>">
+              <button type="submit" name="edit_review">編集</button>
+              <button type="submit" name="delete_review">削除</button>
+            </form>
+          <?php else: ?>
+            <!-- 他人の投稿なら通報 -->
+            <form method="post">
+              <input type="hidden" name="review_id" value="<?= $r['review_id'] ?>">
+              <label for="reason">通報理由：</label>
+              <select name="reason">
+                <option value="不適切な表現">不適切な表現</option>
+                <option value="写真が不適切">写真が不適切</option>
+                <option value="虚偽の内容">虚偽の内容</option>
+              </select>
+              <button type="submit" name="report_review">通報</button>
+            </form>
           <?php endif; ?>
         </div>
       <?php endforeach; ?>
