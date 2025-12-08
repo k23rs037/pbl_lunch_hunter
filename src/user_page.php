@@ -33,57 +33,36 @@ $shops=array(
     ]
 );
 
-$perPage = 1; 
-$total = count($shops);
-$totalPages = ceil($total / $perPage); // 総ページ数
-
-$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-if ($page < 1) $page = 1;
-if ($page > $totalPages) $page = $totalPages;
-
-$start = ($page - 1) * $perPage; 
-$showShops = array_slice($shops, $start, $perPage);
-
 ?>
 
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
-    <title>MY PAGE</title>
-</head>
-<body>
 <?php foreach ($infos as $info): ?>
     <div class="main">
         <h1>マイページ</h1>
         <!--ユーザ情報編集btn-->
-        <button type="button" href="">ユーザ情報編集</button>
+        <button onclick="location.href='?do=user_edit.php'">ユーザ情報編集</button>
     </div>
     <!--アカウント情報-->
     <div class="info">
         <div>
-            <div class="item1">社員ID</div>
-            <!--<input type="text" placeholder="社員IDを入力">-->
+            <div class="item1">社員ID:</div>
+            <!--<input type="text" placeholder="<?php echo $info['社員番号ID'] ?>"-->
             <div><?php echo $info['社員番号ID'] ?></div><br>
         </div>
         <div>
-            <div class="item1">氏名</div>
-            <!--<input type="text" placeholder="姓"><input type="text" placeholder="名">-->
+            <div class="item1">氏名:</div>
+            <!--<input type="text" placeholder="<?php echo $info['姓'] ?>"><input type="text" placeholder="<?php echo$info['名'] ?>">-->
             <div><?php echo $info['姓'],$info['名'] ?></div><br>
         </div>
     </div>
     <div class="info1">
         <div>
-            <div class="item1">アカウント名</div>
-            <!--<input type="text" placeholder="アカウント名を入力">-->
+            <div class="item1">アカウント名:</div>
+            <!--<input type="text" placeholder="<?php echo $info['アカウント名'] ?>">-->
             <div><?php echo $info['アカウント名'] ?></div><br>
         </div>
         <div>
-            <div class="item1">フリガナ</div>
-            <!--<input type="text" placeholder="セイ"><input type="text" placeholder="メイ">-->
+            <div class="item1">フリガナ:</div>
+            <!--<input type="text" placeholder="<?php echo $info['セイ']?>"><input type="text" placeholder="<?php echo $info['メイ']?>">-->
             <div><?php echo $info['セイ'],$info['メイ'] ?></div><br>
         </div>
     </div>
@@ -105,19 +84,11 @@ $showShops = array_slice($shops, $start, $perPage);
                 <div><?php echo $shop['0']?></div>
             </div>
             <div class="phot">
-                <img class="img" src="" alt="未登録">
+                <a href="/src/detail.php">
+                    <img class="img" src="" alt="未登録">
+                </a>
             </div>
         </div>
     </div>
 <?php endforeach; ?>
-<div class="pagination">
-    <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-        <?php if ($i == $page): ?>
-            <span class="current"><?= $i ?></span>
-        <?php else: ?>
-            <a href="?page=<?= $i ?>"><?= $i ?></a>
-        <?php endif; ?>
-    <?php endfor; ?>
 </div>
-</body>
-</html>
