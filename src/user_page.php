@@ -1,14 +1,16 @@
 <?php
-$infos=array(
-    [
-    '社員番号ID'=>'123456',
-    'アカウント名'=>'あああ',
-    '姓'=>'九州',
-    '名'=>'太郎',
-    'セイ'=>'キュウシュウ',
-    'メイ'=>'タロウ',
-    ]
-);
+require_once('model.php');
+$model = new User();
+
+//userのセッションを確認
+$user_id = $_SESSION['user_id'];
+
+//userのデータを取得
+$mydata = $model -> getDetail("user_id='{$user_id}'");
+print_r($mydata);
+//姓名を結合
+$mydata['name'] = $model -> username($mydata);
+$mydata['kana'] = $model -> userkana($mydata);
 
 $shops=array(
     [
@@ -83,41 +85,38 @@ $shops=array(
     }
 
 </style>
-
-<?php foreach ($infos as $info): ?>
     <div class="main">
         <h1>マイページ</h1>
         <!--ユーザ情報編集btn-->
-        <button class="btn1" onclick="location.href='?do=user_edit.php'">ユーザ情報編集</button> 
+        <button class="btn1" onclick="location.href='?do=user_myedit'"><a href="?do=user_myedit">ユーザ情報編集</a></button> 
     </div>
     <div class="info-area">   
         <!--アカウント情報-->
         <div class="info">
             <div>
-                <div class="item1">社員ID:</div>
-                <!--<input type="text" placeholder="<?php echo $info['社員番号ID'] ?>"-->
-                <div><?php echo $info['社員番号ID'] ?></div><br>
+                <div class="item1">社員番号ID:</div>
+                <!--<input type="text" placeholder="<?php echo $mydata['user_id'] ?>"-->
+                <div><?php echo $mydata['user_id'] ?></div><br>
             </div>
             <div>
                 <div class="item1">氏名:</div>
-                <!--<input type="text" placeholder="<?php echo $info['姓'] ?>"><input type="text" placeholder="<?php echo$info['名'] ?>">-->
-                <div><?php echo $info['姓'],$info['名'] ?></div><br>
+                <!--<input type="text" placeholder="<?php echo $mydata['name'] ?>"><input type="text" placeholder="<?php echo$info['名'] ?>">-->
+                <div><?php echo $mydata['name'] ?></div><br>
             </div>
         </div>
         <div class="info1">
             <div>
                 <div class="item1">アカウント名:</div>
-                <!--<input type="text" placeholder="<?php echo $info['アカウント名'] ?>">-->
-                <div><?php echo $info['アカウント名'] ?></div><br>
+                <!--<input type="text" placeholder="<?php echo $mydata['user_account'] ?>">-->
+                <div><?php echo $mydata['user_account'] ?></div><br>
             </div>
             <div>
                 <div class="item1">フリガナ:</div>
-                <!--<input type="text" placeholder="<?php echo $info['セイ']?>"><input type="text" placeholder="<?php echo $info['メイ']?>">-->
-                <div><?php echo $info['セイ'],$info['メイ'] ?></div><br>
+                <!--<input type="text" placeholder="<?php echo $mydata['kana']?>"><input type="text" placeholder="<?php echo $info['メイ']?>">-->
+                <div><?php echo $mydata['kana'] ?></div><br>
             </div>
         </div>
     </div>
-<?php endforeach; ?>
 <?php foreach ($shops as $shop): ?>
     <!--投稿店舗-->
     <div class="shop">
