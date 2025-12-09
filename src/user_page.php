@@ -139,6 +139,5 @@ $shops=array(
                     </a>
                 </div>
             </div>
-        </div>
     <?php endforeach; ?>
 </div>
