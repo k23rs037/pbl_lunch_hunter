@@ -19,7 +19,7 @@ create table t_review(
 create table t_report(
     report_id SERIAL not null comment '通報ID'
     , review_id BIGINT not null comment '口コミID'
-    , report_time TIMESTAMP not null comment '通報時間'
+    , report_time TIMESTAMP not null DEFAULT CURRENT_TIMESTAMP comment '通報時間'
     , user_id CHAR(16) not null comment 'ユーザID'
     , report_reason INT not null comment '通報理由'
     , report_state INT not null comment '処理状態'
