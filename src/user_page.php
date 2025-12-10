@@ -9,7 +9,10 @@ $user_id = $_SESSION['user_id'];
 //userのデータを取得
 $mydata = $model -> getDetail("user_id='{$user_id}'");
 
+
 //print_r($mydata);
+
+
 //姓名を結合
 $mydata['name'] = $model -> username($mydata);
 $mydata['kana'] = $model -> userkana($mydata);

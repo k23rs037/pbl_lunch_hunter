@@ -1,49 +1,29 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <div class="kuchokomi">
-        <h1>口コミ個別表示</h1>
-        <button>戻る</button>
-        <button popovertarget="confirm">通報</button>
-        <div id="confirm" popover>
-            <div>通報理由</div>
-            <div>どちらか一つを選択してください。</div>
-            <div class="pop-btn-area">
-                <div>
-                    <label>
-                        <input type="radio">写真
-                    </label>
-                    <label>
-                        <input type="radio">コメント
-                    </label>
-                </div>
-                <div>本当に通報しますか。</div>    
-                <button onclick="location.href='report.php?id=1'">yes</butto>
-                <button popovertarget="confirm" popovertargetaction="hide">no</button>
+
+<!--
+<div class="kuchokomi">
+    <h1>口コミ個別表示</h1>
+    <button>戻る</button>
+    <button popovertarget="confirm">通報</button>
+    <div id="confirm" popover>
+        <div>通報理由</div>
+        <div>どちらか一つを選択してください。</div>
+        <div class="pop-btn-area">
+            <div>
+                <label>
+                    <input type="radio">写真
+                </label>
+                <label>
+                    <input type="radio">コメント
+                </label>
             </div>
+            <div>本当に通報しますか。</div>    
+            <button onclick="location.href='rev_report.php?id=1'">yes</butto>
+            <button popovertarget="confirm" popovertargetaction="hide">no</button>
         </div>
     </div>
-    <div>
-        <h2>アカウント名</h2>
-        <div>★★★★</div>
-    </div>
-    <div class="komennto">
-        <textarea name="" id="" cols="30" rows="10"></textarea>
-        <img src="" alt="未登録">
-        <img src="" alt="未登録">
-        <img src="" alt="未登録">
-    </div>
-    <button>ひとつ前へ</button>
-    <button>次へ</button>
-</body>
-</html>
-<!-- 上部ボタンなど -->
+</div>
+-->
+<!-- 通報ボタン -->
 <style>
 /* --- モーダル背景 --- */
 #modalBg {
@@ -66,7 +46,7 @@
     text-align: center;
 }
 </style>
-<h3>口コミ個別表示<h3>
+<h1>口コミ個別表示</h1>
 
 <script>
 // モーダルを開く
@@ -93,23 +73,37 @@ function submitReport() {
     const form = document.getElementById("reportForm");
     if (c1) {
         form.insertAdjacentHTML('beforeend',
-            '<input type="hidden" name="reason[]" value="comment">'
+            '<input type="hidden" name="reason[]" value="1">'
         );
     }
     if (c2) {
         form.insertAdjacentHTML('beforeend',
-            '<input type="hidden" name="reason[]" value="photo">'
+            '<input type="hidden" name="reason[]" value="1">'
         );
     }
 
     form.submit();
 }
 </script>
+<?php
+//確認リンク http://localhost/dashboard/pbl_lunch_hunter/index.php?do=rev_detail&rid=0001
+require_once('model.php');
+$modelR = new Review();
+$modelU = new user();
+//レビューをリンクから取得
+$review_id = $_GET['rid'];
+//レビューをリンクから取得
+$review = $modelR -> getDetail("review_id =". $review_id);
+print_r($review);
+echo $review['review_id'];
+//レビューから口コミ投稿者の名称を取得
+$user = $modelU -> getDetail("user_id='".$review['user_id']."'");
+?>
 
 <?php
-echo '<button><a href="?do=rst_detail">戻る</a></button>';
+echo '<button><a href="?do=rst_detail&rst_id='.$review['rst_id'].'">戻る</a></button>';
 if($_SESSION['usertype_id']==1){
-    echo '<form id="reportForm" action="send_report.php" method="post">
+    echo '<form id="reportForm" action=?do=rev_detail_rpsave&rid='.$review_id.'&rst_id='.$review['rst_id'].' method="post">
     <button type="button" onclick="openModal()">通報する</button>
 </form>';
 }elseif($_SESSION['usertype_id']==9){
@@ -131,18 +125,56 @@ if($_SESSION['usertype_id']==1){
         <button onclick="closeModal()">NO</button>
     </div>
 </div>
-<?php
-require_once('model.php');
-$model = new Review();
 
-//$review[] = $model -> getDetail("reviewid = 'rid'");
-//print_r($review);
-//echo $review['comment'];
+<div>
+    <h3><?php echo $user['user_account']; ?>
+    <div>
+        <span style="font-size: 2em; color: yellow;">
+        <?php
+        for ($i=0; $i<$review['eval_pint']; $i++){
+            echo '★';
+        }
+        for ($i=5; $i>$review['eval_pint']; $i--){
+            echo '☆';
+        }
+        ?>
+        </span>
+    </div></h3>
+</div>
+<div>
+    <?php
+    echo $review['review_comment'];
+    ?>
+</div>
+<div>
+    <?php
+    if (!empty($row['photo'])) {
+        $img64 = base64_encode($review['photo1']);
+        $mime  = $row['mime_type'];  // 例： image/jpeg, image/png
 
-echo "<table>";
-echo "<tr><td>アカウント名</td></tr>";
-echo "<tr><td>★★</td></tr>";
-echo "<tr><td>コメント</td></tr>";
-echo "</table>";
+        echo '<img src="data:' . $mime . ';base64,' . $img64 . '" style="max-width:300px;" />';
+    } else {
+        echo "画像なし";
+    }
+    if (!empty($row['photo3'])) {
+        $img64 = base64_encode($review['photo1']);
+        $mime  = $row['mime_type'];  // 例： image/jpeg, image/png
 
-?>
+        echo '<img src="data:' . $mime . ';base64,' . $img64 . '" style="max-width:300px;" />';
+    } else {
+        echo "画像なし";
+    }
+    if (!empty($row['photo3'])) {
+        $img64 = base64_encode($review['photo1']);
+        $mime  = $row['mime_type'];  // 例： image/jpeg, image/png
+
+        echo '<img src="data:' . $mime . ';base64,' . $img64 . '" style="max-width:300px;" />';
+    } else {
+        echo "画像なし";
+    }
+    ?>
+
+</div>
+
+<button>ひとつ前へ</button>
+<button>次へ</button>
