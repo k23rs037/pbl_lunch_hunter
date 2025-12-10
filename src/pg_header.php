@@ -38,20 +38,16 @@ function h($str)
         <span style="
         display: block;
         padding: 15px 15px;
-        font-size: 20px;
-        font-weight: normal;
-        color:black;
-        background-color: transparent;
-        text-decoration: none;
-        cursor: default;
       ">
-          Lunch Hunter
+       <img src="png/lunch_hunter.png" alt="Lunch Hunter" 
+       style="height:64px; vertical-align:middle; margin-right:8px;">
+
         </span>
       </div>
       <div class="navbar-collapse collapse">
         <ul class="nav navbar-nav navbar-right">
               <?php
-              echo '<li class="navbar-text">アカウント：';
+              echo '<li class="navbar-text" style="line-height:64px;">アカウント：';
               echo $_SESSION['user_account'] ?? '', ' &nbsp;&nbsp;&nbsp;';
               echo '</li>';
               if (isset($_SESSION['usertype_id'])) {
@@ -73,11 +69,11 @@ function h($str)
                 }
 
                 foreach ($menu as $label => $action) {
-                  echo  '<li><a href="?do=' . $action . '">' . $label . '</a></li>&nbsp;&nbsp;';
+                  echo  '<li><a href="?do=' . $action . '" style="line-height:64px;">' . $label . '</a></li>&nbsp;&nbsp;';
                 }
-                echo  '<li><a href="?do=user_logout" >ログアウト</a></li>&nbsp;&nbsp;';
+                echo  '<li><a href="?do=user_logout" style="line-height:64px;">ログアウト</a></li>&nbsp;&nbsp;';
               } else {
-                echo  '<li><a href="?do=user_login" >ログイン</a></li>';
+                echo  '<li><a href="?do=user_login" style="line-height:64px;">ログイン</a></li>';
               }
               ?>
         </ul>
