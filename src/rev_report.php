@@ -21,6 +21,7 @@ $reports = array(
         '通報者'=> '通報者',
         '投稿主'=> '投稿主',
         '非表示'=>'0',
+        '取り消し'=>'1',
     ],
     [
         'id'=> '3',
@@ -43,6 +44,7 @@ $reports = array(
         '通報者'=> '通報者',
         '投稿主'=> '投稿主',
         '非表示'=>'0',
+        '取り消し'=>'1',
     ]
 );
 ?>
@@ -92,14 +94,13 @@ $reports = array(
         padding: 8px;      
         margin-top: 5px;   
         border-radius: 5px;
-        background-color:red;
     }
 
     .small{
         font-size:12px
     }
 
-    .btn{
+    .btn02{
         display: flex;
         flex-direction: column;
     }
@@ -148,7 +149,7 @@ $reports = array(
 <h1 class="report_title">通報済み口コミ一覧表示</h1>
 
 <div class="top-btn">
-    <button type="button">通報取り消し一覧</button>
+    <button type="button" id="cancelFilterBtn">通報取り消し一覧</button>
     <button type="button" id="hidbtn">非表示</button>
     <button type="button" id="sortBtn">並び替え（新着順）</button>
 </div>
@@ -187,8 +188,8 @@ $reports = array(
             <h3>#<?php echo htmlspecialchars($report['ジャンル']) ?></h3>
             <div>通報内容：<?php echo htmlspecialchars($report['通報理由']) ?></div>
             <div class="btn02">
-                <button type="button" onclick="location.href='?do=rev_detail.php'"><a href="?do=rev_detail.php">詳細</button>
-                <button type="button" onclick="location.href='cancel.php'">取り消し</button>
+                <button type="button" onclick="location.href='?do=rev_detail.php'"><a href="?do=rev_detail.php">詳細</a></button>
+                <button type="button">取り消し</button>
                 <button class="btn0" popovertarget="my-<?= $report['id'] ?>">削除</button>
             </div>
 
@@ -208,12 +209,21 @@ $reports = array(
     let reports = <?php echo json_encode($reports); ?>;
     let isDesc = false; 
     let hideMode = false;
+    let cancelMode = false;
 
     const renderReports = () => {
         const area = document.getElementById("reportArea");
         area.innerHTML = "";
 
-        let list = hideMode ? reports.filter(r => r['非表示'] === '1') : reports;
+        let list = reports;
+
+        if (hideMode) {
+            list = list.filter(r => r['非表示'] === '1');
+        }
+
+        if (cancelMode) {
+            list = list.filter(r => r['取り消し'] === '1');
+        }
 
         if (isDesc) list = [...list].reverse();
 
@@ -226,7 +236,10 @@ $reports = array(
                         <p>評価：${report['評価点']}</p>
                         <div class="star-rating" style="--rate:${parseFloat(report['評価点'])}"></div>
                     </div>
-                    <p>${report['コメント']}</p>
+                    <div class="kome">
+                        <div>${report['コメント']}</div>
+                    </div>
+                    
                     <div class="small">
                         <p>投稿主：${report['通報者']}</p>
                         <p>通報者：${report['投稿主']}</p>
@@ -236,7 +249,7 @@ $reports = array(
                     <h3>#${report['ジャンル']}</h3>
                     <p>通報内容：${report['通報理由']}</p>
                     <button type="button" onclick="location.href='detail.php?id=${report['id']}'">詳細</button>
-                    <button type="button" onclick="location.href='cancel.php?id=${report['id']}'">取り消し</button>
+                    <button type="button">取り消し</button>
                     <button class="btn0" popovertarget="my-<?= $report['id'] ?>">削除</button>
             
                     <div class="pop" popover="manual" id="my-<?= $report['id'] ?>">
@@ -271,6 +284,12 @@ $reports = array(
     document.getElementById("hidbtn").onclick = () => {
         hideMode = !hideMode;
         document.getElementById("hidbtn").innerText = hideMode ? "全件表示" : "非表示";
+        renderReports();
+    };
+
+    document.getElementById("cancelFilterBtn").onclick = () => {
+        cancelMode = !cancelMode;
+        document.getElementById("cancelFilterBtn").innerText = cancelMode ? "一覧" : "取り消し一覧";
         renderReports();
     };
 
