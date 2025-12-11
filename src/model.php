@@ -5,12 +5,14 @@ class Model
     protected $table;
     protected $db;
 
+    protected $blobColumns = ['photo1', 'photo2', 'photo3'];
+
     protected static $conf = [
         'host' => 'mysql', 'user' => 'root', 'pass' => 'root', 'dbname' => 'test'
     ];
 
     protected static $codes = [
-        'rst_holiday' => ['1' => '日', '2' => '月', '4' => '火', '8' => '水', '16' => '木', '32' => '金', '64' => '土', '128'=>'年中無休', '256'=>'未定'],
+        'rst_holiday' => ['1' => '日', '2' => '月', '4' => '火', '8' => '水', '16' => '木', '32' => '金', '64' => '土', '128' => '年中無休', '256' => '未定'],
         'rst_pay' => ['1' => '現金', '2' => 'QRコード', '4' => '電子マネー', '8' => 'クレジットカード']
     ];
 
@@ -87,14 +89,58 @@ class Model
      */
     public function insert($data)
     {
-        if(empty($data)) die('INSERT用データが空です');
-        $keys = implode(',', array_map(fn($k) => "`$k`", array_keys($data)));
-        $values = array_map(fn($v) => is_string($v) ? "'" . $this->db->real_escape_string($v) . "'" : $v, array_values($data));
+        $needBlob = false;
+
+        // 写真データが含まれているかチェック
+        foreach ($this->blobColumns as $col) {
+            if (isset($data[$col])) {
+                $needBlob = true;
+                break;
+            }
+        }
+
+        return $needBlob
+            ? $this->insertBlob($data)  // 画像入り
+            : $this->insertAnother($data);     // 通常 INSERT
+    }
+    public function insertAnother($data)
+    {
+        if (empty($data)) die('INSERT用データが空です');
+        $keys = implode(',', array_map(fn ($k) => "`$k`", array_keys($data)));
+        $values = array_map(fn ($v) => is_string($v) ? "'" . $this->db->real_escape_string($v) . "'" : $v, array_values($data));
         $values = implode(",", $values);
         $sql = "INSERT INTO {$this->table} ($keys) VALUES ($values)";
         $this->execute($sql);
         return $this->db->affected_rows;
     }
+
+    public function insertBlob($data)
+    {
+        $keys = implode(',', array_map(fn ($k) => "`$k`", array_keys($data)));
+
+        // ? をカラム数分作る
+        $placeholders = implode(',', array_fill(0, count($data), '?'));
+
+        $sql = "INSERT INTO {$this->table} ($keys) VALUES ($placeholders)";
+        $stmt = $this->db->prepare($sql);
+
+        // バインド
+        $types = '';
+        $values = [];
+        foreach ($data as $value) {
+            if (is_string($value)) {
+                $types .= 's'; // 文字列（バイナリも可）
+            } else {
+                $types .= 'i'; // 数値
+            }
+            $values[] = $value;
+        }
+
+        $stmt->bind_param($types, ...$values);
+        $stmt->execute();
+        return $this->db->affected_rows;
+    }
+
 
     /*update(): 特定のテーブルに対してデータを更新する。
      * 引数: $data, 配列, 例：['name'=>'foo', 'age'=>18, 'tel'=>'12345']
@@ -102,6 +148,18 @@ class Model
      * 戻り値：変更した行数
      */
     public function update($data, $where)
+    {
+        // 写真を含むかどうか判定
+        foreach ($this->blobColumns as $col) {
+            if (isset($data[$col])) {
+                return $this->updateBlob($data, $where);
+            }
+        }
+
+        // 通常UPDATE
+        return $this->updateAnother($data, $where);
+    }
+    public function updateAnother($data, $where)
     {
         $setParts = [];
         foreach ($data as $k => $v) {
@@ -122,6 +180,46 @@ class Model
         $this->execute($sql);
         return $this->db->affected_rows;
     }
+
+    public function updateBlob($data, $where)
+    {
+        $setSql = implode(',', array_map(fn ($k) => "`$k` = ?", array_keys($data)));
+
+        if (is_array($where)) {
+            $whereParts = [];
+            foreach ($where as $key => $value) {
+                $whereParts[] = "$key = ?";
+            }
+            $whereSql = implode(' AND ', $whereParts);
+        } else {
+            $whereSql = $where;
+        }
+
+        $sql = "UPDATE {$this->table} SET {$setSql} WHERE {$whereSql}";
+        $stmt = $this->db->prepare($sql);
+
+        $types = '';
+        $values = [];
+
+        // SET の値
+        foreach ($data as $value) {
+            $types .= is_int($value) ? 'i' : 's';
+            $values[] = $value;
+        }
+
+        // WHERE の値
+        if (is_array($where)) {
+            foreach ($where as $value) {
+                $types .= is_int($value) ? 'i' : 's';
+                $values[] = $value;
+            }
+        }
+
+        $stmt->bind_param($types, ...$values);
+        $stmt->execute();
+        return $stmt->affected_rows;
+    }
+
 
     /* delete(): 特定のテーブルに対して条件を満たすデータを削除する。
      * 引数: $where, 条件を表す文字列, 例：'sid=k22rs999'
@@ -168,10 +266,10 @@ class User extends Model
     function get_Userdetail($where)
     {
         $data = [];
-        foreach($where as $key => $values){
+        foreach ($where as $key => $values) {
             $data[] = "$key = '$values'";
         }
-        $wherestr = implode(' AND ',$data);
+        $wherestr = implode(' AND ', $data);
         $user = $this->getDetail($wherestr);
         if (empty($user)) return [];
         $usertype_id = $user['usertype_id'];
@@ -224,10 +322,10 @@ class Restaurant extends Model
     function get_RstDetail($where)
     {
         $data = [];
-        foreach($where as $key => $values){
+        foreach ($where as $key => $values) {
             $data[] = "$key = '$values'";
         }
-        $wherestr = implode(' AND ',$data);
+        $wherestr = implode(' AND ', $data);
         $rst = $this->getDetail($wherestr);
         // holidays（ビットフラグ）をラベル配列に変換
         $flag = (int)$rst['rst_holiday'];  // DB の値（10進）
@@ -258,7 +356,8 @@ class Restaurant extends Model
         $rst['rst_genre'] = $this->query($sql);
         return $rst;
     }
-    function rst_insert($data){
+    function rst_insert($data)
+    {
         $rst = $this->insert($data);
         return $this->db->insert_id;
     }
@@ -285,12 +384,13 @@ class Genre extends Model
 class Review extends Model
 {
     protected $table = "t_review";
-    function get_RevDettail($where){
+    function get_RevDettail($where)
+    {
         $data = [];
-        foreach($where as $key => $values){
+        foreach ($where as $key => $values) {
             $data[] = "$key = '$values'";
         }
-        $wherestr = implode(' AND ',$data);
+        $wherestr = implode(' AND ', $data);
         $rev = $this->getDetail($wherestr);
         return $rev;
     }
@@ -299,12 +399,13 @@ class Review extends Model
 class Report extends Model
 {
     protected $table = "t_report";
-    function get_RepoDettail($where){
+    function get_RepoDettail($where)
+    {
         $data = [];
-        foreach($where as $key => $values){
+        foreach ($where as $key => $values) {
             $data[] = "$key = '$values'";
         }
-        $wherestr = implode(' AND ',$data);
+        $wherestr = implode(' AND ', $data);
         $repo = $this->getDetail($wherestr);
         return $repo;
     }
