@@ -13,7 +13,8 @@ class Model
 
     protected static $codes = [
         'rst_holiday' => ['1' => '日', '2' => '月', '4' => '火', '8' => '水', '16' => '木', '32' => '金', '64' => '土', '128' => '年中無休', '256' => '未定'],
-        'rst_pay' => ['1' => '現金', '2' => 'QRコード', '4' => '電子マネー', '8' => 'クレジットカード']
+        'rst_pay' => ['1' => '現金', '2' => 'QRコード', '4' => '電子マネー', '8' => 'クレジットカード'],
+        'report_reason' => ['1'=>'写真','2'=>'コメント','3'=>'両方']
     ];
 
     function __construct($conf = null)
@@ -425,6 +426,7 @@ class Report extends Model
         }
         $wherestr = implode(' AND ', $data);
         $repo = $this->getDetail($wherestr);
+        $repo['report_reason'] = $this->getValue($repo['report_reason'],'report_reason');
         return $repo;
     }
 }
