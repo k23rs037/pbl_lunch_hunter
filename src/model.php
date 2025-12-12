@@ -14,8 +14,8 @@ class Model
     protected static $codes = [
         'rst_holiday' => ['1' => '日', '2' => '月', '4' => '火', '8' => '水', '16' => '木', '32' => '金', '64' => '土', '128' => '年中無休', '256' => '未定'],
         'rst_pay' => ['1' => '現金', '2' => 'QRコード', '4' => '電子マネー', '8' => 'クレジットカード'],
-        'report_reason' => ['1'=>'写真','2'=>'コメント','3'=>'両方'],
-        'report_state' => ['1'=>'未処理', '2'=>'削除','3'=>'取り消し']
+        'report_reason' => ['1' => '写真', '2' => 'コメント', '3' => '両方'],
+        'report_state' => ['1' => '未処理', '2' => '削除', '3' => '取り消し']
     ];
 
     function __construct($conf = null)
@@ -182,7 +182,7 @@ class Model
     {
         $setParts = [];
         foreach ($data as $k => $v) {
-            $v = is_string($v)? "'" . $this->db->real_escape_string($v) . "'": $v;
+            $v = is_string($v) ? "'" . $this->db->real_escape_string($v) . "'" : $v;
 
             $setParts[] = "{$k}={$v}";
         }
@@ -303,14 +303,59 @@ class User extends Model
         $user['userkana'] = $this->userkana($user);
         return $user;
     }
-    //ユーザリスト
-    function get_userlist($orderby = null, $limit = 0, $offset = 0)
-    {
-        $sql = "SELECT * FROM t_user NATURAL JOIN t_usertype WHERE usertype_id = '1'";
-        $users =  $this->query($sql, $orderby, $limit, $offset);
-
-        return $users;
+    public function get_userlist_filtered($search_key = '', $suspended_only = false, $orderby = null) {
+        $where = [];
+    
+        if (!empty($search_key)) {
+            $escaped_key = $this->db->real_escape_string($search_key);
+            $where[] = "(t_user.id LIKE '%{$escaped_key}%' OR t_user.account LIKE '%{$escaped_key}%')";
+        }
+    
+        if ($suspended_only) {
+            $where[] = "t_user.suspended = 1";
+        }
+    
+        $order = '';
+        if ($orderby === 'id') $order = 't_user.id ASC';
+        elseif ($orderby === 'address') $order = 't_user.kana ASC';
+    
+        return $this->get_userlist($where, $order);
     }
+    
+    //ユーザリスト
+    function get_userlist($where = 1, $orderby = null, $limit = 0, $offset = 0)
+    {
+        // WHERE 配列を構築
+        $whereStr = '';
+        if (!empty($where)) {
+            if (is_array($where)) {
+                $parts = [];
+                foreach ($where as $k => $v) {
+                    if (is_int($k)) {
+                        // 数字キーはすでにSQL条件文字列として渡されている場合
+                        $parts[] = $v;
+                    } else {
+                        // キーが文字列の場合
+                        $v_escaped = $this->db->real_escape_string($v);
+                        $parts[] = "$k = '$v_escaped'";
+                    }
+                }
+                $whereStr = implode(' AND ', $parts);
+            } else {
+                $whereStr = $where;
+            }
+        }
+
+        // SQL 組み立て
+        $sql = "SELECT * FROM t_user NATURAL JOIN t_usertype WHERE usertype_id = '1'";
+        if ($whereStr !== '') {
+            $sql .= " AND {$whereStr}";
+        }
+
+        // 実行
+        return $this->query($sql, $orderby, $limit, $offset);
+    }
+
     //お気に入り店舗
     function get_favorite($user_id)
     {
@@ -427,7 +472,7 @@ class Report extends Model
         }
         $wherestr = implode(' AND ', $data);
         $repo = $this->getDetail($wherestr);
-        $repo['report_reason'] = $this->getValue($repo['report_reason'],'report_reason');
+        $repo['report_reason'] = $this->getValue($repo['report_reason'], 'report_reason');
         return $repo;
     }
 }
