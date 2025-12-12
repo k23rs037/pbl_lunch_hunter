@@ -171,16 +171,28 @@ $displayList = array_slice($rst_list_filtered, $start, $limit);
               <?php
               $review_data = $review->getList("rst_id = " . intval($s['rst_id']));
               $rating = 0;
+              $count = 0;
+
               if (!empty($review_data)) {
-                for ($i = 0; $i < count($review_data); $i++) {
-                  $rating += intval($review_data[$i]['eval_point']);
+                foreach ($review_data as $r) {
+                  // rev_state が true のものだけ計算に含める
+                  if ($r['rev_state']) {
+                    $rating += intval($r['eval_point']);
+                    $count++;
+                  }
                 }
-                $rating = $rating / count($review_data);
+                if ($count > 0) {
+                  $rating = $rating / $count;
+                } else {
+                  $rating = 0; // 表示用に評価がない場合は 0
+                }
               }
+
               $stars = round($rating);
               ?>
               <?= str_repeat('★', $stars) ?><?= str_repeat('☆', 5 - $stars) ?> <?= $stars ?>
             </div>
+
 
             <p>ジャンル: <?= htmlspecialchars(implode(' ', array_column($s['rst_genre'] ?? [], 'genre')), ENT_QUOTES, 'UTF-8') ?></p>
             <p>登録者: <?= htmlspecialchars($user->get_Userdetail(['user_id' => $s['user_id']])['user_account'] ?? '') ?></p>
