@@ -34,13 +34,13 @@ if ($mode === 'insert' || $mode === 'update') {
     $tel3 = $_POST['tel_part3'] ?? '';
 
     if (
-        !preg_match('/^\d{2,5}$/', $tel1) ||
-        !preg_match('/^\d{1,4}$/', $tel2) ||
-        !preg_match('/^\d{3,4}$/', $tel3)
+        !isset($tel1) || strlen($tel1) < 2 || strlen($tel1) > 5 ||
+        !isset($tel2) || strlen($tel2) < 1 || strlen($tel2) > 4 ||
+        !isset($tel3) || strlen($tel3) < 3 || strlen($tel3) > 4
     ) {
         $error = true;
     } else {
-        $tel_num = $tel1 . $tel2 . $tel3;
+        $tel_num = $tel1 . '-' . $tel2 . '-' . $tel3;
     }
 
 

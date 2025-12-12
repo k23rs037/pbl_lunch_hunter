@@ -100,8 +100,9 @@
                     <span class="required-star">*必須</span><br>
                     <input type="tel" name="tel_part1" value="<?= htmlspecialchars($old_tel1) ?>" pattern="\d{2,5}"> -
                     <input type="tel" name="tel_part2" value="<?= htmlspecialchars($old_tel2) ?>" pattern="\d{1,4}"> -
-                    <input type="tel" name="tel_part3" value="<?= htmlspecialchars($old_tel3) ?>" pattern="\d{4}">
+                    <input type="tel" name="tel_part3" value="<?= htmlspecialchars($old_tel3) ?>" pattern="\d{3,4}">
                 </div>
+
 
                 <!-- ジャンル -->
                 <div class="form-group">
@@ -109,8 +110,8 @@
                     <span class="required-star">*必須</span><br>
                     <?php
                     $genres = [
-                        1 => 'うどん', 2 => 'ラーメン', 3 => 'その他麺類', 4 => 'ファストフード',
-                        5 => '和食', 6 => '洋食', 7 => '定食', 8 => '焼肉', 9 => '中華', 10 => 'カレー', 11 => 'その他'
+                        1 => 'うどん', 2 => 'ラーメン', 3 => 'その他麺類', 4 => '定食',5 => 'カレー', 
+                        6 => 'ファストフード', 7 => 'カフェ', 8 => '和食', 9 => '洋食', 10 => '焼肉', 11 => '中華',12 => 'その他'
                     ];
                     foreach ($genres as $val => $label) :
                     ?>
