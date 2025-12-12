@@ -10,51 +10,105 @@
 <body>
 -->
 <style>
-.point {
-    display: flex;
-    flex-direction: row-reverse; /* 右から左へ並べる */
-    justify-content: flex-start;
-    width: 300px;
-}
+    /*グラフ*/
+    .graph-row {
+        display: flex;
+        align-items: center;
+        margin: 6px 0;
+    }
 
-/* ラジオボタンは非表示 */
-.point input {
-    display: none;
-}
+    .graph-label {
+        width: 60px;
+        font-weight: bold;
+    }
 
-/* 星のスタイル */
-.point label {
-    font-size: 30px;      
-    color: #ccc;          /* 初期は灰色 */
-    cursor: pointer;
-    padding: 5px;
-    transition: color 0.2s;
-}
+    .graph-bar {
+        height: 20px;
+        background-color: #4CAF50;
+        border-radius: 4px;
+    }
 
-/* チェックされた星（★）から左側を黄色にする */
-.point input:checked ~ label {
-    color: gold;
-}
+    .graph-value {
+        margin-left: 10px;
+    }
+    .point {
+        display: flex;
+        flex-direction: row-reverse; /* 右から左へ並べる */
+        justify-content: flex-start;
+        width: 300px;
+    }
 
-.big-textarea {
-    width: 500px;    /* 幅を指定 */
-    height: 200px;   /* 高さを指定 */
-    font-size: 16px; /* 文字サイズも調整可 */
-}
+    /* ラジオボタンは非表示 */
+    .point input {
+        display: none;
+    }
 
-body {
-    font-size: 20px;
-}
-.danger-btn {
-    color: #fff;
-    font-weight: bold;
-}
+    /* 星のスタイル */
+    .point label {
+        font-size: 30px;      
+        color: #ccc;          /* 初期は灰色 */
+        cursor: pointer;
+        padding: 5px;
+        transition: color 0.2s;
+    }
 
-.link-white {
-    color: #fff !important;       /* 青を上書きして白にする */
-    font-weight: bold;            /* 太字 */
-    text-decoration: none !important; /* 下線消す */
-}
+    /* チェックされた星（★）から左側を黄色にする */
+    .point input:checked ~ label {
+        color: gold;
+    }
+
+    .big-textarea {
+        width: 500px;    /* 幅を指定 */
+        height: 200px;   /* 高さを指定 */
+        font-size: 16px; /* 文字サイズも調整可 */
+    }
+
+    body {
+        font-size: 20px;
+    }
+    .danger-btn {
+        color: #fff;
+        font-weight: bold;
+    }
+
+    .link-white {
+        color: #fff !important;       /* 青を上書きして白にする */
+        font-weight: bold;            /* 太字 */
+        text-decoration: none !important; /* 下線消す */
+    }
+    .star{
+        display: flex;
+        gap:0.2px;
+    }
+
+    .star-rating {
+    --rate: 0;        /* 0〜5 の小数(0.1 刻みなど)を直接入れる */
+    --size: 40px;
+    --star-color: #ccc;
+    --star-fill: gold;
+
+    font-size: var(--size);
+    font-family: "Arial", sans-serif;
+    position: relative;
+    display: inline-block;
+    line-height: 1;
+    }
+
+    .star-rating::before {
+        content: "★★★★★";
+        color: var(--star-color);
+    }
+
+    .star-rating::after {
+        content: "★★★★★";
+        color: var(--star-fill);
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: calc(var(--rate) * 20%);  /* ★ 小数点をそのまま使用（0.1 → 2%） */
+        overflow: hidden;
+        white-space: nowrap;
+    }
 </style>
 <?php
 //初期処理
@@ -75,27 +129,22 @@ $rvlist = $review->getList("rst_id=".$rst_id['rst_id'].'&&rev_state=1');
 //print_r($rvlist);
 $userlist = $user->getList();
 //print_r($userlist);
-//評価平均
-$total = 0;
-$count = count($rvlist);
 
-foreach ($rvlist as $rv) {
-    $total += (int)$rv["eval_point"];
+//ユーザーリスト
+$userMap = [];
+foreach ($userlist as $u) {
+    $userMap[$u["user_id"]] = $u["user_account"];
 }
-
-$avg = $count > 0 ? $total / $count : 0;
-$avg = round($avg, 1); // 小数第1位までにしたい場合
-
 ?>
 <h1 style="text-align:center;">店舗詳細</h1>
 <div>
-    ＜<a href="">戻る(店舗一覧)</a>
+    ＜<a href="?do=rst_list">戻る(店舗一覧)</a>
     <?php
     if($_SESSION['usertype_id']==1){
         if($_SESSION['user_id']==$rstdata['user_id']){  
             echo '<a href="?do=rst_edit&rst_id='.$rst_id['rst_id'].'" class=btn>編集</a>';
         }
-        echo '<button>お気に入り</button>';
+        echo '<button style="text-align:right;">お気に入り</button>';
     }elseif($_SESSION['usertype_id']==9){  
         echo '<a href="?do=rst_edit&rst_id='.$rst_id['rst_id'].'" class=btn>編集</a>';
     }
@@ -104,81 +153,128 @@ $avg = round($avg, 1); // 小数第1位までにしたい場合
 </div>
 <br>
 <div class="shopinfo">
-    <h3><?php echo $rstdata['rst_name']; ?></h3>
+    <h2><?php echo $rstdata['rst_name']; ?></h2>
     <table border="1">
         <tr>
-            <td><div>住所</div></td>
-            <td><?php echo $rstdata['rst_address']?></td>
-        </tr>
-        <tr>
-            <td><div>電話番号</div></td>
-            <td><?php echo $rstdata['tel_num']?></td>
-        </tr>
-        <tr>
-            <td><div>店休日</div></td>
             <td>
-                <?php
-                foreach($rstdata['holidays']  as $h){
-                    echo $h.' ';
-                }
-                ?>
+                <table border="2">
+                    <tr>
+                        <td><div>住所</div></td>
+                        <td><?php echo $rstdata['rst_address']?></td>
+                    </tr>
+                    <tr>
+                        <td><div>電話番号</div></td>
+                        <td><?php echo $rstdata['tel_num']?></td>
+                    </tr>
+                    <tr>
+                        <td><div>店休日</div></td>
+                        <td>
+                            <?php foreach($rstdata['holidays'] as $h){ echo $h.' '; } ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><div>営業時間</div></td>
+                        <td><?php echo $rstdata['start_time'].'~'.$rstdata['end_time'] ?></td>
+                    </tr>
+                    <tr>
+                        <td><div>ジャンル</div></td>
+                        <td>
+                            <?php foreach($rstdata['rst_genre'] as $rg){ echo $rg['genre'].' '; } ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><div>支払方法</div></td>
+                        <td>
+                            <?php foreach($rstdata['pays'] as $p){ echo $p.' '; } ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><div>URL</div></td>
+                        <td><?php echo $rstdata['rst_info']; ?></td>
+                    </tr>
+                </table>
+            </td>
+
+            <!-- ここが画像のセル（右側） -->
+            <td style="text-align:center;">
+                <img src="" alt="未登録" style="max-width:200px;">
             </td>
         </tr>
-        <tr>
-            <td><div>営業時間</div></td>
-            <td><?php echo $rstdata['start_time'].'~'.$rstdata['end_time'] ?></td>
-        </tr>
-        <tr>
-            <td><div>ジャンル</div></td>
-            <td>
-                <?php
-                foreach($rstdata['rst_genre']  as $rg){
-                    echo $rg['genre'].' ';
-                }
-                ?>
-            </td>
-        </tr>
-        <tr>
-            <td><div>支払方法</div></td>
-            <td>
-                <?php
-                foreach($rstdata['pays']  as $p){
-                    echo $p.' ';
-                }
-                ?>
-            </td>
-        </tr>
-        <tr>
-            <td><div>URL</div></td>
-            <td><?php echo $rstdata['rst_info']; ?></td>
-        </tr>
-        
     </table>
-    <div class="shop-phot">
-        <img src="" alt="未登録">
-    </div>
 </div>
 
+<?php
+// 1〜5 のカウント用配列
+$ratingCount = [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0];
+
+// rvdata から評価点を集計
+foreach ($rvlist as $review) {
+    $point = intval($review["eval_point"]);
+    if ($point >= 1 && $point <= 5) {
+        $ratingCount[$point]++;
+    }
+}
+
+// 最大人数（横棒の最大幅計算用）
+$maxCount = max($ratingCount);
+?>
 <div>
-    <h3>評価</h3>
-    <div>総評価人数</div>
-    <ul class="gurafu">
-        <li>1</li>
-        <li>2</li>
-        <li>3</li>
-        <li>4</li>
-        <li>5</li>
-    </ul>
-    <div><h3>平均評価：<?= $avg ?></h3></div>
-    <div>★★★★</div>
-</div>
+    <table border="1" width="100%" style="table-layout:fixed;">
+        <tr>
+            <!-- 左：評価グラフ -->
+            <td width="500" valign="top" style="padding:10px;">
+
+                <h2>評価</h2>
+
+                <div>
+                    <?php foreach ($ratingCount as $point => $count): ?>
+                        <?php
+                            // 棒の幅を計算
+                            $width = $maxCount > 0 ? ($count / $maxCount) * 300 : 0;
+                        ?>
+                        <div style="display:flex; align-items:center; margin-bottom:4px;">
+                            <div style="width:40px;"><?= $point ?> 点</div>
+                            <div style="background:gold; height:12px; width:<?= $width ?>px; margin:0 6px;"></div>
+                            <div><?= $count ?> 人</div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+                    <?php
+                    //評価平均
+                    $total = 0;
+                    $count = count($rvlist);
+
+                    foreach ($rvlist as $rv) {
+                        $total += (int)$rv["eval_point"];
+                    }
+
+                    $avg = $count > 0 ? $total / $count : 0;
+                    $avg = round($avg, 1); // 小数第1位までにしたい場合
+                    ?>
+                <div style="margin-top:10px;">総評価人数：<?= $count ?>人</div>
+
+            </td>
+
+            <!-- 右：平均評価 -->
+            <td valign="top" width="400" style="padding:10px;">
+
+                <div><h3>平均評価：<?= $avg ?></h3></div>
+
+                <div style="margin-top:10px;">
+                    <div class="star-rating" style="--rate:<?= floatval($avg) ?>; --star-size:40px;"></div>
+                </div>
+
+            </td>
+        </tr>
+    </table>
+</div><br>
 <?php if ($_SESSION['usertype_id'] == 1) { ?>
 <div class="shop-point">
     <form action="?do=rev_save" method="post" enctype="multipart/form-data">
     <div class="container-fluid">
         <div class="row">
             <div class="col-xs-6">
-                <h3>評価</h3>
+                <h2>評価</h2>
                 <div class="point">
                     <!-- 星は右から並べる -->
                     <input type="radio" id="star5" name="point" value="5">
@@ -230,12 +326,25 @@ $avg = round($avg, 1); // 小数第1位までにしたい場合
 <?php
 echo '<input type="hidden" name="user_id" value='.$_SESSION['user_id'].'>';
 echo '<input type="hidden" name="rst_id" value='.$rst_id['rst_id'].'>';
-?>
-<input type="hidden" name="order" value="2">
-<input type="submit" value="編集" class="btn btn-primary link-white">
+//userがコメントしているか調査
+$hasReview = false;
 
-<input type="hidden" name="order" value="1">
-<input type="submit" value="登録" class="btn btn-primary link-white">
+foreach ($rvlist as $rv) {
+    if ($rv["user_id"] == $_SESSION["user_id"]) {
+        $hasReview = true;
+        $myreview_id = $rv["review_id"];
+        break;
+    }
+}
+?>
+<?php if ($hasReview): ?>
+    <input type="hidden" name="review_id" value="<?= $myreview_id ?>">
+    <input type="hidden" name="order" value="2">
+    <input type="submit" value="編集" class="btn btn-primary link-white">
+<?php else: ?>
+    <input type="hidden" name="order" value="1">
+    <input type="submit" value="登録" class="btn btn-primary link-white">
+<?php endif; ?>
 
 <a href="?do=rev_save" class="btn btn-danger link-white">削除</a>
 </form>
@@ -293,7 +402,7 @@ echo '<input type="hidden" name="rst_id" value='.$rst_id['rst_id'].'>';
 
                     <!-- アカウント名 -->
                     <div class="fw-bold mb-1">
-                        <?= htmlspecialchars($review["user_id"]) ?>
+                        <?= htmlspecialchars($userMap[$review["user_id"]] ?? "不明ユーザー") ?>
                     </div>
 
                     <!-- 星評価 -->
