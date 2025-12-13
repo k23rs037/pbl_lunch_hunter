@@ -8,7 +8,19 @@ $review = new Review();
 $fav = new Favorite();
 
 //レビューをリンクから取得
-$rst_id = ['rst_id' => $_GET['rst_id']];
+if (!empty($_GET['rst_id'])) {
+    $rst_id = ['rst_id' => $_GET['rst_id']];
+    $rstdata = $restaurant -> getDetail("rst_id=".$rst_id['rst_id']);
+    if(empty($rstdata)){
+            echo "店舗が存在していません。<br>恐れ入りますが、ヘッダーから退出してください。";
+    exit;
+}
+} else {
+    // rst_id が空なら処理を中断
+    echo "店舗が存在していません。<br>恐れ入りますが、ヘッダーから退出してください。";
+    exit;
+}
+
 $rstdata = $restaurant -> get_RstDetail($rst_id);
 //print_r($rstdata);
 //$rst_holiday = 
@@ -321,8 +333,9 @@ $maxCount = max($ratingCount);
     <form action="?do=rev_save" method="post" enctype="multipart/form-data">
     <div class="container-fluid">
         <div class="row">
-            <div class="col-xs-6">
+            <table><tr><td>
                 <h2>評価</h2>
+                星をクリックで入力
                 <div class="point">
                     <!-- 星は右から並べる -->
                     <input type="radio" id="star5" name="eval_point" value="5">
@@ -331,7 +344,7 @@ $maxCount = max($ratingCount);
                     <input type="radio" id="star4" name="eval_point" value="4">
                     <label for="star4">★</label>
 
-                    <input type="radio" id="star3" name="eval_point" value="3">
+                    <input type="radio" id="star3" name="eval_point" value="3" checked/>
                     <label for="star3">★</label>
 
                     <input type="radio" id="star2" name="eval_point" value="2">
@@ -342,7 +355,7 @@ $maxCount = max($ratingCount);
                 </div><br>
                 <textarea name="review_comment" class="big-textarea" placeholder="コメントを入力してください"></textarea>
             </div>
-            <div class="col-xs-4">
+            </td><td style="vertical-align: top;">
                 <div class="phot">
                     <!-- 1枚目 -->
                     <input type="file" id="imageInput0" name="img[]" accept="image/*">
@@ -364,8 +377,8 @@ $maxCount = max($ratingCount);
                         <img id="previewImage2" src="" style="max-width:200px;">
                         <button type="button" id="deleteBtn2">選択解除</button>
                     </div>
-                    <br>
-            </div>
+                </div>
+            </td></tr></table>
         </div>
     </div>
 </div>
@@ -468,7 +481,7 @@ foreach ($rvlist as $rv) {
                         <?= (mb_strlen($review["review_comment"] ?? '') > 20 ? "..." : "") ?>
                     </div>
                     <!-- 詳細ボタン -->
-                    <a href="?do=rev_detail&rid=<?= $rid ?>" class="btn btn-primary w-100">
+                    <a href="?do=rev_detail&rev_id=<?= $rid ?>" class="btn btn-primary w-100">
                         詳細を見る
                     </a>
 

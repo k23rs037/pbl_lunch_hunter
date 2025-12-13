@@ -1,14 +1,13 @@
 <?php
 require_once('model.php');
 $report = new Report();
-
 $review_id = $_GET['rid'];
 //理由を判定
-if($_POST['reason'][0]==1&&$_POST['reason'][1]==1){
+if($_POST['reasoncomment']==1&&$_POST['reasonphoto']==1){
     $reason = 3;
-}elseif($_POST['reason'][0]==1){
+}elseif($_POST['reasoncomment']==1){
     $reason = 1;
-}elseif($_POST['reason'][1]==1){
+}elseif($_POST['reasonphoto']==1){
     $reason = 2;
 }else{
     

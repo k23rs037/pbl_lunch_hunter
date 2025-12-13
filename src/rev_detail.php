@@ -32,37 +32,46 @@ require_once('model.php');
 $modelR = new Review();
 $modelU = new user();
 //レビューをリンクから取得
-$review_id = $_GET['rid'];
+$review_id = $_GET['rev_id'];
 //レビューをリンクから取得
 $review = $modelR -> getDetail("review_id =". $review_id);
-//print_r($review); //デバッグ
-//echo $review['review_id'];
+//レビューが表示できなければエラー画面を表示して退出
+if(empty($review)){
+    echo "レビューが存在していません。<br>恐れ入りますが、ヘッダーから退出してください。";
+    exit;
+}
+if($review['rev_state']==0){
+    echo "レビューが存在していません。<br>恐れ入りますが、ヘッダーから退出してください。";
+    exit;
+}
+
 //レビューから口コミ投稿者の名称を取得
 $user = $modelU -> getDetail("user_id='".$review['user_id']."'");
 
 // 前のレビューIDを取得
-//$prev = $model->insert("review_id < {$review_id}", "review_id DESC");
-
+$prev = $modelR->getList("review_id < {$review_id}&&rev_state=1&&rst_id=".$review['rst_id'], "review_id DESC",1);
 // 次のレビューIDを取得
-//$next = $model->insert("review_id > {$review_id}", "review_id ASC");
+$next = $modelR->getList("review_id > {$review_id}&&rev_state=1&&rst_id=".$review['rst_id'], "review_id ASC",1);
+//print_r($next);
 ?>
 
+＞<a href="?do=rst_detail&rst_id=<?=$review['rst_id'] ?>" >戻る(店舗詳細)</a></button>
+<div style="display:flex; justify-content:flex-end; margin-top:10px;">
 <?php
 if($_SESSION['usertype_id']==1){
     echo '<form id="reportForm" action=?do=rev_detail_rpsave&rid='.$review_id.'&rst_id='.$review['rst_id'].' method="post">';
-    echo '＞<a href="?do=rst_detail&rst_id='.$review['rst_id'].'" >戻る</a></button>';
-    echo '<button type="button" onclick="openModal()">通報する</button></form>';
+    echo '<button class="btn btn-danger btn-lg" type="button" onclick="openModal()">通報する</button></form>';
 }elseif($_SESSION['usertype_id']==9){
     echo '<form id="hideForm' . $review['review_id'] . '" method="POST" action="?do=rev_save" style="display:none;">';
     echo '<input type="hidden" name="review_id" value="' . $review['review_id'] . '">';
     echo '<input type="hidden" name="rst_id" value="'.$review['rst_id'].'">';
     echo '<input type="hidden" name="order" value="3">';
     echo '</form>';
-    echo '<button onclick="confirmHide(' . $review['review_id'] . ')">非表示</button>';
+    echo '<button class="btn btn-danger btn-lg" onclick="confirmHide(' . $review['review_id'] . ')">非表示</button>';
 }
 # localhost\dashboard\pbl_lunch_hunter\src\rev_detail.php
-
 ?>
+</div>
 <div id="modalBg">
     <div id="modalBox">
         <p>通報理由（1つ以上選択してください）</p>
@@ -76,7 +85,9 @@ if($_SESSION['usertype_id']==1){
         <button onclick="closeModal()">NO</button>
     </div>
 </div>
-
+            </td>
+        </tr>
+    </table>
 <div>
     <table border="1" width="100%" style="table-layout:fixed;">
         <tr>
@@ -136,8 +147,28 @@ if($_SESSION['usertype_id']==1){
 
 </div>
 
-<button>ひとつ前へ</button>
-<button>次へ</button>
+<div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px;">
+
+    <!-- 前へ -->
+    <?php if (!empty($prev[0])): ?>
+        <a href="?do=rev_detail&rev_id=<?= $prev[0]['review_id'] ?>" class="btn btn-primary">
+            ひとつ前へ
+        </a>
+    <?php else: ?>
+        <button class="btn btn-primary" disabled>ひとつ前へ</button>
+    <?php endif; ?>
+
+    <!-- 次へ -->
+    <?php if (!empty($next[0])): ?>
+        <a href="?do=rev_detail&rev_id=<?= $next[0]['review_id'] ?>" class="btn btn-primary">
+            次へ
+        </a>
+    <?php else: ?>
+        <button class="btn btn-primary" disabled>次へ</button>
+    <?php endif; ?>
+
+</div>
+
 
 <script>
 // モーダルを開く
@@ -159,17 +190,21 @@ function submitReport() {
         alert("通報理由を1つ以上選択してください。");
         return; // モーダル閉じずにそのまま
     }
-
     // hidden input を生成してフォームに追加（送信用）
     const form = document.getElementById("reportForm");
-    if (c1) {
+    if (c1 && c2) {
         form.insertAdjacentHTML('beforeend',
-            '<input type="hidden" name="reason[]" value="1">'
+            '<input type="hidden" name="reasoncomment" value="1"><input type="hidden" name="reasonphoto" value="1">'
         );
     }
-    if (c2) {
+    if (c1 && !c2) {
         form.insertAdjacentHTML('beforeend',
-            '<input type="hidden" name="reason[]" value="1">'
+            '<input type="hidden" name="reasoncomment" value="1"><input type="hidden" name="reasonphoto" value="0">'
+        );
+    }
+    if (!c1 && c2) {
+        form.insertAdjacentHTML('beforeend',
+            '<input type="hidden" name="reasoncomment" value="0"><input type="hidden" name="reasonphoto" value="1">'
         );
     }
 
