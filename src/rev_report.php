@@ -206,7 +206,7 @@ if ($filter === "cancel") {
                 <div class="review-head big">
                     <div class="review-head-row">
                         <span class="review-user">投稿者：<?= htmlspecialchars($rev_username) ?></span>
-                        <span class="review-store">店舗名：<?= htmlspecialchars($rev_detail['store_name'] ?? '不明') ?></span>
+                        <span class="review-store">店舗名：<?= htmlspecialchars($rst_name ?? '不明') ?></span>
                     </div>
                 </div>
 
