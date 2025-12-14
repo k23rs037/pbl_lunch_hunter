@@ -7,8 +7,8 @@ $report = new Report();
 // ファイルを読み込む（未選択なら null）
 function readBlob($key)
 {
-    if (!empty($_FILES[$key]['tmp_name'])) {
-        return file_get_contents($_FILES[$key]['tmp_name']);
+    if (!empty($_FILES['img']['tmp_name'][$key])) {
+        return file_get_contents($_FILES['img']['tmp_name'][$key]);
 
     }
     return null;
@@ -28,6 +28,8 @@ $review_id = safePost('review_id');
 $rev_id    = safePost('rev_id');
 $repo_id   = safePost('repo_id');
 $rst_id    = safePost('rst_id');
+
+//print_r($_POST);
 
 // モード別処理
 switch ($mode) {
@@ -93,6 +95,14 @@ switch ($mode) {
         $review->update(['rev_state' => 0], 'review_id=' . intval($rev_id));
         $report->update(['report_state' => 2], 'review_id=' . intval($rev_id));
         header('Location:?do=rev_report');
+        exit;
+        break;
+    case 'directdelete':
+        if (!$rev_id) exit('Invalid rev_id');
+
+        $review->update(['rev_state' => 0], 'review_id=' . intval($rev_id));
+        $report->update(['report_state' => 2], 'review_id=' . intval($rev_id));
+        header('Location:?do=rst_detail&rst_id=' . intval($rst_id));
         exit;
         break;
 
