@@ -3,15 +3,48 @@ if (!empty($_GET['msg'])) {
     if($_GET['msg']==1){
         echo '登録が完了しました。';
     }else{
-        echo 'ユーザーIDが重複、または空欄があります。';
+        echo 'このユーザIDは既に使用されているため、登録できません。';
     }
     
 }
 ?>
 
+<style>
+    #popup_overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center;
+    }
+    #popup_box {
+        background: #fff; padding: 20px; border-radius: 8px; text-align: center;
+    }
+    #popup_box button { margin: 10px; }
+</style>
+
 <h1 style="text-align:center;">ユーザー情報登録</h1>
 
 <form action="?do=user_save" method="post">
+
+<div class="modal fade" id="confirmModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">確認</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        登録してもよろしいですか？
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+        <button type="submit" class="btn btn-primary">Yes</button>
+      </div>
+
+    </div>
+  </div>
+</div>
 <table class="table table-hover" width="100%" style="table-layout:fixed;">
 <tr><td>ユーザID</td><td></td><td>氏名_姓</td><td>氏名_名</td></tr>
 <tr>
@@ -28,5 +61,23 @@ if (!empty($_GET['msg'])) {
 </tr>
 </table>
 <input type="hidden" name="mode" value="input">
-<input type="submit" value="登録" class="btn btn-primary">
+<button type="button" onclick="show_popup()" class="btn btn-primary">登録</button>
+<!-- パスワードリセット確認ポップアップ -->
+<div id="popup_overlay">
+  <div id="popup_box">
+    <p>本当にユーザーを登録しますか？</p>
+      <button type="submit" name="reset_password">Yes</button>
+      <button type="button" onclick="hide_popup()">No</button>
+    </form>
+  </div>
+</div>
 </form>
+
+<script>
+  function show_popup() {
+    document.getElementById("popup_overlay").style.display = "flex";
+  }
+  function hide_popup() {
+    document.getElementById("popup_overlay").style.display = "none";
+  }
+</script>

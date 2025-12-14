@@ -19,13 +19,13 @@ switch ($mode) {
             'user_l_name'=>$_POST['user_l_name'], 
             'user_f_name'=>$_POST['user_f_name'], 
             'user_l_kana'=>$_POST['user_l_kana'], 
-            'user_f_kana'=>$_POST['user_l_kana'], 
+            'user_f_kana'=>$_POST['user_f_kana'], 
             'user_account'=>$user_account,
             'usertype_id'=>1
         );
 
         //
-        if(empty($userold['user_id'])){
+        if(!empty($userold['user_id'])){
             header('Location:?do=user_input&msg=2');
         }
         //テストコード

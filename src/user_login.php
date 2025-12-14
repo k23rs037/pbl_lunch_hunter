@@ -115,7 +115,7 @@ unset($_SESSION['error_msg']);
         <!-- フォーム -->
         <form class="login-form" action="?do=user_check" method="post">
             <div class="login-field">
-                <label>ユーザ名</label>
+                <label>ログインID</label>
                 <input type="text" name="user_id" class="login-input" value="<?= htmlspecialchars($old['store_name'] ?? '') ?>">
             </div>
 
