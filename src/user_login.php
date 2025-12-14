@@ -1,9 +1,8 @@
 <?php
 $error = $_SESSION['error'] ?? false;
-if (!empty($error)) {
-    echo '<h2 style="color:red">ユーザ名またはパスワードが間違えています</h2>';
-    unset($_SESSION['error']);
-}
+$msg = $_SESSION['error_msg'] ?? null;
+unset($_SESSION['error']);
+unset($_SESSION['error_msg']);
 ?>
 <style>
     /* Login Page Styles */
@@ -108,17 +107,21 @@ if (!empty($error)) {
                 <h1 class="login-title">ログイン</h1>
             </div>
         </div>
-
+        <?php
+        if (!empty($error)) {
+            echo '<h2 style="color:red">'.$msg.'</h2>';
+        }
+        ?>
         <!-- フォーム -->
         <form class="login-form" action="?do=user_check" method="post">
             <div class="login-field">
-                <label>ユーザ名</label>
-                <input type="text" name="user_id" class="login-input" value="<?= htmlspecialchars($old['store_name'] ?? '') ?>" required>
+                <label>ログインID</label>
+                <input type="text" name="user_id" class="login-input" value="<?= htmlspecialchars($old['store_name'] ?? '') ?>">
             </div>
 
             <div class="login-field">
                 <label>パスワード</label>
-                <input type="password" name="user_password" class="login-input" required>
+                <input type="password" name="user_password" class="login-input">
             </div>
 
             <div class="login-button-container">

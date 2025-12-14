@@ -4,94 +4,137 @@ require_once 'model.php';
 $review = new Review();
 $report = new Report();
 
+// ファイルを読み込む（未選択なら null）
 function readBlob($key)
 {
     if (!empty($_FILES[$key]['tmp_name'])) {
         return file_get_contents($_FILES[$key]['tmp_name']);
+
     }
     return null;
 }
 
+// POSTキーが配列なら数字か文字列で呼び出せるよう統一
+function safePost($key)
+{
+    return $_POST[$key] ?? null;
+}
+
 // モード取得
-$mode = $_POST['mode'] ?? '';
+$mode = safePost('mode');
 
 // ID取得
-$rev_id = $_POST['rev_id'] ?? null;
-$repo_id = $_POST['repo_id'] ?? null;
-$rst_id = $_POST['rst_id'] ?? null;
+$review_id = safePost('review_id');
+$rev_id    = safePost('rev_id');
+$repo_id   = safePost('repo_id');
+$rst_id    = safePost('rst_id');
 
 // モード別処理
 switch ($mode) {
+
     case 'update':
-        //編集
-        $review_id = $_POST['review_id'];
+        if (!$review_id) exit('Invalid review_id');
+
         $data = [
-            'eval_point' => $_POST['point'], 'review_comment' => $_POST['comment'] ?? null, 'rst_id' => $_POST['rst_id'], 'user_id' => $_POST['user_id'], 'photo1' => readBlob(0), 'photo2' => readBlob(1), 'photo3' => readBlob(2), 'rev_state' => true
+            'eval_point'     => intval(safePost('eval_point')),
+            'review_comment' => safePost('review_comment') ?? safePost('comment'),
+            'rst_id'         => $rst_id,
+            'user_id'        => safePost('user_id'),
+            'rev_state'      => 1
         ];
-        //print_r($_FILES);
-        //print_r($data);
-        $review_save->update($data, 'review_id=' . $review_id);
-        header('Location:?do=rst_detail&rst_id=' . $data['rst_id'] . '');
+
+        // 画像追加（未選択の場合はスキップ）
+        for ($i = 0; $i < 3; $i++) {
+            $blob = readBlob($i);
+            if ($blob !== null) {
+                $data["photo" . ($i + 1)] = $blob;
+            }
+        }
+
+        $review->update($data, 'review_id=' . intval($review_id));
+        header('Location:?do=rst_detail&rst_id=' . intval($rst_id));
+
         exit;
         break;
-        // ★ 新規作成
+
     case 'create':
         $data = [
-            'eval_point'      => $_POST['eval_point'],
-            'review_comment'  => $_POST['review_comment'] ?? null,
-            'rst_id'          => $_POST['rst_id'],
-            'user_id'         => $_SESSION['user_id'],
-            'photo1'          => readBlob('photo1'),
-            'photo2'          => readBlob('photo2'),
-            'photo3'          => readBlob('photo3'),
-            'rev_state'       => 1
+            'eval_point'     => intval(safePost('eval_point')),
+            'review_comment' => safePost('review_comment') ?? null,
+            'rst_id'         => intval($rst_id),
+            'user_id'        => $_SESSION['user_id'],
+            'rev_state'      => 1
         ];
 
+        // 画像追加
+        for ($i = 0; $i < 3; $i++) {
+            $blob = readBlob('photo' . ($i + 1));
+            if ($blob !== null) {
+                $data["photo" . ($i + 1)] = $blob;
+            }
+        }
         $review->insert($data);
-        // 終了後リダイレクト
-        header('Location:?do=rst_detail&rst_id=' . $data['rst_id'] . '');
+        header('Location:?do=rst_detail&rst_id=' . intval($rst_id));
         exit;
         break;
 
-        // ★ 取り消し（例：rev_state を false にするなど）
     case 'cancel':
-        if ($rev_id == null || $repo_id == null) exit('Invalid rev_id');
+        if (!$rev_id) exit('Invalid rev_id');
 
-        $review->update(['rev_state' => 1], ['review_id' => $rev_id]);
-        $report->update(['report_state' => 3], ['review_id' => $rev_id]);
+        $review->update(['rev_state' => 1], 'review_id=' . intval($rev_id));
+        $report->update(['report_state' => 3], 'review_id=' . intval($rev_id));
         header('Location:?do=rev_report');
         exit;
         break;
 
-        // ★ 削除
     case 'delete':
-        if ($rev_id == null || $repo_id == null) exit('Invalid rev_id');
+        if (!$rev_id) exit('Invalid rev_id');
 
-        $review->update(['rev_state' => 0], ['review_id' => $rev_id]);
-        $report->update(['report_state' => 2], ['review_id' => $rev_id]);
+        $review->update(['rev_state' => 0], 'review_id=' . intval($rev_id));
+        $report->update(['report_state' => 2], 'review_id=' . intval($rev_id));
         header('Location:?do=rev_report');
         exit;
         break;
 
     case 'report':
-        if ($rev_id == null || $rst_id == null) exit('Invalid request');
+        if (!$rev_id || !$rst_id) exit('Invalid request');
 
         $reason = 0;
-        if (!empty($_POST['reason'])) {
+        if (!empty($_POST['reason']) && is_array($_POST['reason'])) {
             $r = $_POST['reason'];
             if (in_array('1', $r) && in_array('2', $r)) $reason = 3;
             elseif (in_array('1', $r)) $reason = 1;
             elseif (in_array('2', $r)) $reason = 2;
         }
+
         $data = [
-            'review_id'     => $rev_id,
+            'review_id'     => intval($rev_id),
             'user_id'       => $_SESSION['user_id'],
             'report_reason' => $reason,
             'report_state'  => 1,
         ];
-        $report->insert($data);
 
-        header('Location:?do=rst_detail&rst_id=' . $rst_id);
+        $report->insert($data);
+        header('Location:?do=rst_detail&rst_id=' . intval($rst_id));
+        exit;
+        break;
+
+    case 'my_delete':
+        if (!isset($_POST['review_id'])) {
+            exit('レビューIDが指定されていません。');
+        }
+
+        $review_id = $_POST['review_id'];
+        $user_id   = $_SESSION['user_id'];
+
+        // 自分のレビューだけ削除
+        $review->delete([
+            'review_id' => $review_id,
+            'user_id'   => $user_id
+        ]);
+
+        // 削除後リダイレクト
+        header('Location:?do=rst_detail&rst_id=' . intval($rst_id));
         exit;
         break;
     default:

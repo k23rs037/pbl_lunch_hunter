@@ -8,7 +8,7 @@ $rev = new Review();
 $repo = new Report();
 $genre = new Genre();
 
-$mode   = $_POST['mode'] ?? 'insert';   // デフォルトは insert
+$mode   = $_POST['mode'] ?? '';
 $rst_id = $_POST['rst_id'] ?? null;
 $rows = 0;
 $total_rows = 0;
@@ -23,7 +23,6 @@ if ($mode === 'insert' || $mode === 'update') {
             break;
         }
     }
-
     if (empty($_POST['holiday']) || empty($_POST['genre']) || empty($_POST['payment'])) {
         $error = true;
     }
@@ -42,7 +41,7 @@ if ($mode === 'insert' || $mode === 'update') {
         $tel_num = $tel1 . '-' . $tel2 . '-' . $tel3;
     }
 
-    if (!$error) {
+    if ($error === false) {
         // ビットフラグ処理
         $holiday = array_sum(array_map('intval', $_POST['holiday']));
         $genre_sum = array_sum(array_map('intval', $_POST['genre']));
@@ -102,7 +101,11 @@ if ($mode === 'insert' || $mode === 'update') {
     } else {
         $_SESSION['old'] = $_POST;
         $_SESSION['error'] = true;
-        header('Location:?do=rst_input');
+        if ($mode === 'insert') {
+            header('Location:?do=rst_input');
+        } elseif ($mode === 'update' && !empty($rst_id)) {
+            header("Location:?do=rst_edit&rst_id={$rst_id}");
+        }
         exit();
     }
 } elseif ($mode === 'discount' && !empty($rst_id)) {

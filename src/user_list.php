@@ -110,6 +110,7 @@ $user_list = $user->get_userlist_filtered($search_key, $stop_user, $sort);
             <th>名前（フリガナ）</th>
             <th>ID</th>
             <th>アカウント名</th>
+            <th>ユーザ種別</th>
             <th>操作</th>
         </tr>
     </thead>
@@ -122,6 +123,7 @@ $user_list = $user->get_userlist_filtered($search_key, $stop_user, $sort);
                     <td><?= htmlspecialchars($user_detail['username']) ?>（<?= htmlspecialchars($user_detail['userkana']) ?>）</td>
                     <td><?= htmlspecialchars($user_detail['user_id']) ?></td>
                     <td><?= htmlspecialchars($user_detail['user_account']) ?></td>
+                    <td><?= htmlspecialchars($user_detail['usertype']) ?>
                     <td><a href="index.php?do=user_edit&id=<?= urlencode($user_detail['user_id']) ?>">編集</a></td>
                 </tr>
             <?php endforeach; ?>

@@ -75,7 +75,7 @@ $start = ($page - 1) * $limit;
 $displayList = array_slice($rst_list_filtered, $start, $limit);
 ?>
 <style>
-.store-card {
+  .store-card {
     border: 1px solid #ccc;
     padding: 10px;
     margin-bottom: 15px;
@@ -84,15 +84,46 @@ $displayList = array_slice($rst_list_filtered, $start, $limit);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-}
-.store-card img {
+  }
+
+  .store-card img {
     max-width: 100%;
     height: 150px;
     object-fit: cover;
     margin-bottom: 10px;
-}
-.rating {
+  }
+
+  .rating {
     color: orange;
+  }
+
+  .star-rating {
+  position: relative;
+  display: inline-block;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.star-rating::before {
+  content: "★★★★★";
+  color: #ccc; /* 空星 */
+}
+
+.star-rating::after {
+  content: "★★★★★";
+  color: gold; /* 塗りつぶし */
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: calc(var(--rate) / 5 * 100%);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.rating-num {
+  margin-left: 6px;
+  font-size: 14px;
+  vertical-align: middle;
 }
 
 </style>
@@ -150,7 +181,7 @@ $displayList = array_slice($rst_list_filtered, $start, $limit);
   <h2>店舗一覧</h2>
 
   <?php if (empty($displayList)) : ?>
-    <p>条件に一致する店舗がありません。</p>
+    <p>0件</p>
   <?php else : ?>
     <div class="row">
       <?php foreach ($displayList as $s) : ?>
@@ -196,23 +227,21 @@ $displayList = array_slice($rst_list_filtered, $start, $limit);
 
               if (!empty($review_data)) {
                 foreach ($review_data as $r) {
-                  // rev_state が true のものだけ計算に含める
                   if ($r['rev_state']) {
-                    $rating += intval($r['eval_point']);
+                    $rating += (float)$r['eval_point'];
                     $count++;
                   }
                 }
-                if ($count > 0) {
-                  $rating = $rating / $count;
-                } else {
-                  $rating = 0; // 表示用に評価がない場合は 0
-                }
               }
 
-              $stars = round($rating);
+              $avg = ($count > 0) ? $rating / $count : 0;
               ?>
-              <?= str_repeat('★', $stars) ?><?= str_repeat('☆', 5 - $stars) ?> <?= $stars ?>
+
+
+              <div class="star-rating" style="--rate: <?= $avg ?>;"></div>
+              <span class="rating-num"><?= number_format($avg, 1) ?></span>
             </div>
+
 
 
             <p>ジャンル: <?= htmlspecialchars(implode(' ', array_column($s['rst_genre'] ?? [], 'genre')), ENT_QUOTES, 'UTF-8') ?></p>

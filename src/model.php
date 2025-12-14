@@ -273,7 +273,7 @@ class User extends Model
 
     function auth($uid, $upass)
     {
-        return $this->getDetail("uid='{$uid}' AND upass='{$upass}'");
+        return $this->getDetail("user_id='{$uid}' AND password='{$upass}'");
     }
     //姓名結合
     function username($user)
@@ -327,8 +327,6 @@ class User extends Model
         // 停止中か通常か
         if ($stop_user) {
             $where[] = "usertype_id = 2";
-        } else {
-            $where[] = "usertype_id = 1";
         }
 
         // ORDER BY

@@ -1,43 +1,103 @@
 <?php
-require_once 'model.php'; // ここでデータベース接続やクラスを読み込み
+require_once 'model.php';
 
+/* =========================
+   OLD取得
+========================= */
+$old = $_SESSION['old'] ?? [];
+unset($_SESSION['old']);
+
+/* =========================
+   rst_id取得
+========================= */
 $rst_id = $_GET['rst_id'] ?? null;
 if (!$rst_id) {
     die("店舗IDが指定されていません");
 }
 
+/* =========================
+   DB取得（ベース）
+========================= */
 $rst = new Restaurant();
-$store_data = $rst->get_RstDetail(['rst_id' => $rst_id]); // ここでDBから取得
+$store_data = $rst->get_RstDetail(['rst_id' => $rst_id]);
 
 if (!$store_data) {
     die("該当する店舗データが見つかりません");
 }
 
-// チェックボックス用関数（ビットフラグ）
+/* =========================
+   OLDがあれば上書き
+========================= */
+if (!empty($old)) {
+
+    // テキスト系
+    $store_data['rst_name']    = $old['store_name'] ?? $store_data['rst_name'];
+    $store_data['rst_address'] = $old['address']    ?? $store_data['rst_address'];
+    $store_data['start_time']  = $old['open_time']  ?? $store_data['start_time'];
+    $store_data['end_time']    = $old['close_time'] ?? $store_data['end_time'];
+    $store_data['rst_info']    = $old['url']        ?? $store_data['rst_info'];
+
+    // 電話番号（分割入力）
+    $tel1 = $old['tel_part1'] ?? '';
+    $tel2 = $old['tel_part2'] ?? '';
+    $tel3 = $old['tel_part3'] ?? '';
+
+} else {
+    // DBの電話番号を分割
+    $tel_parts = explode('-', $store_data['tel_num']);
+    $tel1 = $tel_parts[0] ?? '';
+    $tel2 = $tel_parts[1] ?? '';
+    $tel3 = $tel_parts[2] ?? '';
+}
+
+/* =========================
+   チェックボックス用
+========================= */
+
+// 休日（OLD優先）
+$holiday_selected = $old['holiday'] ?? $store_data['rst_holiday'];
+
+// 支払い方法（OLD優先）
+$payment_selected = $old['payment'] ?? explode(',', $store_data['rst_pay'] ?? []);
+
+// ジャンル
+$genre = new Genre();
+if (!empty($old['genre'])) {
+    $genre_selected = $old['genre']; // OLD（配列）
+} else {
+    // DB（genre_id配列に変換）
+    $genre_rows = $genre->getList("rst_id = {$rst_id}");
+    $genre_selected = array_column($genre_rows, 'genre_id');
+}
+
+/* =========================
+   エラー情報
+========================= */
+$error = $_SESSION['error'] ?? false;
+unset($_SESSION['error']);
+
+/* =========================
+   チェック用関数
+========================= */
 function is_checked($value, $flags)
 {
     return ($flags & $value);
 }
 
-// チェックボックス用関数（配列）
 function is_array_checked($value, $selected_array)
 {
-    return in_array($value, $selected_array);
+    return in_array($value, (array)$selected_array);
 }
 
-// エラーメッセージ
-$error = $_SESSION['error'] ?? false;
-if (!empty($error)) {
-    echo '<h2 style="color:red">必須項目が未入力です</h2>';
-    unset($_SESSION['error']);
-}
-
-// 時間リスト生成関数
+/* =========================
+   時間選択肢
+========================= */
 function generate_time_options($current_time)
 {
     $options = '';
     $start = strtotime('0:00');
-    $end = strtotime('24:00');
+    $end   = strtotime('24:00');
+
     for ($time = $start; $time <= $end; $time += 30 * 60) {
         $time_str = date('G:i', $time);
         $selected = ($time_str == $current_time) ? 'selected' : '';
@@ -46,21 +106,18 @@ function generate_time_options($current_time)
     return $options;
 }
 
-$tel_parts = explode('-', $store_data['tel_num']);
-$tel1 = $tel_parts[0] ?? '';
-$tel2 = $tel_parts[1] ?? '';
-$tel3 = $tel_parts[2] ?? '';
-
-// ジャンル配列（DBに保存されている場合は適宜変換）
-$genre = new Genre();
-$genre_selected = $genre->getList("rst_id = {$rst_id}");
 
 ?>
 
 <main>
     <h2>店舗詳細編集・削除</h2>
+    <?php
+    if (!empty($error)) {
+        echo '<h2 style="color:red">必須項目が未入力です</h2>';
+    }
+    ?>
 
-    <form action="?do=rst_save" method="post" enctype="multipart/form-data">
+    <form id="updateForm" action="?do=rst_save" method="post" enctype="multipart/form-data">
         <input type="hidden" name="mode" value="update">
         <input type="hidden" name="rst_id" value="<?= htmlspecialchars($rst_id) ?>">
         <input type="hidden" name="current_photo_path" value="<?= htmlspecialchars($store_data['photo1']) ?>">
@@ -72,14 +129,14 @@ $genre_selected = $genre->getList("rst_id = {$rst_id}");
                 <div class="form-group">
                     <label for="store_name">店舗名</label>
                     <span class="required-star">*必須</span>
-                    <input type="text" id="store_name" name="store_name" value="<?= htmlspecialchars($store_data['rst_name']) ?>" required>
+                    <input type="text" id="store_name" name="store_name" value="<?= htmlspecialchars($store_data['rst_name']) ?>" >
                 </div>
 
                 <!-- 住所 -->
                 <div class="form-group">
                     <label for="address">住所</label>
                     <span class="required-star">*必須</span>
-                    <input type="text" id="address" name="address" value="<?= htmlspecialchars($store_data['rst_address']) ?>" required>
+                    <input type="text" id="address" name="address" value="<?= htmlspecialchars($store_data['rst_address']) ?>" >
                 </div>
 
                 <!-- 定休日 -->
@@ -100,17 +157,17 @@ $genre_selected = $genre->getList("rst_id = {$rst_id}");
                 <div class="form-group">
                     <label>営業時間</label>
                     <span class="required-star">*必須</span><br>
-                    <select name="open_time" required><?= generate_time_options($store_data['start_time']) ?></select>
-                    <select name="close_time" required><?= generate_time_options($store_data['end_time']) ?></select>
+                    <select name="open_time" ><?= generate_time_options($store_data['start_time']) ?></select>
+                    <select name="close_time" ><?= generate_time_options($store_data['end_time']) ?></select>
                 </div>
 
                 <!-- 電話番号 -->
                 <div class="form-group">
                     <label>電話番号</label>
                     <span class="required-star">*必須</span><br>
-                    <input type="tel" name="tel_part1" value="<?= htmlspecialchars($tel1) ?>" required> -
-                    <input type="tel" name="tel_part2" value="<?= htmlspecialchars($tel2) ?>" required> -
-                    <input type="tel" name="tel_part3" value="<?= htmlspecialchars($tel3) ?>" required>
+                    <input type="tel" name="tel_part1" value="<?= htmlspecialchars($tel1) ?>" > -
+                    <input type="tel" name="tel_part2" value="<?= htmlspecialchars($tel2) ?>" > -
+                    <input type="tel" name="tel_part3" value="<?= htmlspecialchars($tel3) ?>" >
                 </div>
 
                 <!-- ジャンル -->
@@ -173,12 +230,13 @@ $genre_selected = $genre->getList("rst_id = {$rst_id}");
                 </div>
             </div>
         </div>
-
-        <button type="submit" name="update">更新</button>
     </form>
-    <form action="?do=rst_save" method="post" id="deleteForm">
-        <input type="hidden" name="mode" value="delete">
-        <input type="hidden" name="rst_id" value="<?= htmlspecialchars($rst_id) ?>">
-        <button type="submit" style="background-color:red; color:white;">削除</button>
-    </form>
+    <div class="text-right">
+    <button type="submit" form="updateForm" name="mode" value="update" class="btn btn-primary">更新</button>
+        <form action="?do=rst_save" method="post" id="deleteForm" style="display:inline-block; margin-left:8px;">
+            <input type="hidden" name="mode" value="delete">
+            <input type="hidden" name="rst_id" value="<?= htmlspecialchars($rst_id) ?>">
+            <button type="submit" class="btn btn-danger">削除</button>
+        </form>
+    </div>
 </main>
