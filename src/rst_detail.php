@@ -311,7 +311,7 @@ $isFav = count($exists) > 0;
 
                     echo '<img src="data:' . $mime . ';base64,' . $img64 . '" style="max-width:300px;" />';
                 } else {
-                    echo "画像なし";
+                    echo '<img src="png\noimage.png" style="max-width:300px;" />';
                 }
                 ?>
             </td>

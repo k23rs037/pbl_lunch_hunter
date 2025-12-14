@@ -152,49 +152,45 @@
                 </div>
 
                 <!-- 写真 -->
-                <div class="form-group">
-                    <label for="photo_file">写真</label>
-                    <input type="file" id="photo_file" name="photo_file" accept="image/*">
 
-                    <!-- 既存写真がある場合は表示 -->
-                    <?php if (!empty($old['photo1'])) : ?>
-                        <img id="preview_img" src="<?= htmlspecialchars($old['photo1']) ?>" style="max-width:200px; display:inline-block; border:1px solid #ccc; margin-top:10px;">
-                        <button type="button" id="delete_btn" style="margin-left:10px;">削除</button>
-                    <?php else : ?>
-                        <img id="preview_img" src="" style="max-width:200px; display:none; border:1px solid #ccc; margin-top:10px;">
-                        <button type="button" id="delete_btn" style="display:none; margin-left:10px;">削除</button>
-                    <?php endif; ?>
+                <input type="file" id="imageInput1" name="photo_file" accept="image/*">
+
+                <div id="previewArea1" style="display:none; margin-top:10px;">
+                    <img id="previewImage1" style="max-width:200px;">
+                    <button type="button" id="deleteBtn1">選択解除</button>
                 </div>
-
                 <script>
-                    const fileInput = document.getElementById("photo_file");
-                    const previewImg = document.getElementById("preview_img");
-                    const deleteBtn = document.getElementById("delete_btn");
-                    const deleteFlag = document.getElementById("delete_photo_flag");
+                document.addEventListener("DOMContentLoaded", function () {
+                    console.log("JS 読み込みOK");
 
-                    fileInput.addEventListener("change", function(event) {
-                        const file = event.target.files[0];
-                        if (file && file.type.startsWith("image/")) {
-                            const reader = new FileReader();
-                            reader.onload = function(e) {
-                                previewImg.src = e.target.result;
-                                previewImg.style.display = "inline-block";
-                                deleteBtn.style.display = "inline-block";
-                                deleteFlag.value = "0"; // 新しい写真選択したら削除フラグリセット
-                            };
-                            reader.readAsDataURL(file);
-                        }
+                    const input = document.getElementById("imageInput1");
+                    const area  = document.getElementById("previewArea1");
+                    const img   = document.getElementById("previewImage1");
+                    const del   = document.getElementById("deleteBtn1");
+
+                    console.log(input, area, img, del);
+
+                    input.addEventListener("change", function () {
+                        console.log("change 発火");
+
+                        const file = this.files[0];
+                        if (!file) return;
+
+                        const reader = new FileReader();
+                        reader.onload = function (e) {
+                            img.src = e.target.result;
+                            area.style.display = "block";
+                        };
+                        reader.readAsDataURL(file);
                     });
 
-                    deleteBtn.addEventListener("click", function() {
-                        previewImg.src = "";
-                        previewImg.style.display = "none";
-                        deleteBtn.style.display = "none";
-                        fileInput.value = "";
-                        deleteFlag.value = "1"; // 削除フラグ立てる
+                    del.addEventListener("click", function () {
+                        img.src = "";
+                        area.style.display = "none";
+                        input.value = "";
                     });
+                });
                 </script>
-
             </div>
 
             <button type="submit" name="register" style="float: right; margin-right: 10px;">登録</button>
@@ -203,3 +199,38 @@
     </form>
 
 </main>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const input = document.getElementById("imageInput1");
+    const area  = document.getElementById("previewArea1");
+    const img   = document.getElementById("previewImage1");
+    const del   = document.getElementById("deleteBtn1");
+
+    if (!input || !area || !img || !del) {
+        console.error("画像プレビュー用要素が見つかりません");
+        return;
+    }
+
+    // プレビュー表示
+    input.addEventListener("change", function () {
+        const file = this.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            img.src = e.target.result;
+            area.style.display = "block";
+        };
+        reader.readAsDataURL(file);
+    });
+
+    // 削除ボタン
+    del.addEventListener("click", function () {
+        img.src = "";
+        area.style.display = "none";
+        input.value = "";
+    });
+
+});
+</script>

@@ -170,7 +170,16 @@ $favorites = $user->get_favorite($user_id);
                     <div><?php echo $shop['discount_label'] ?></div>
                 </div>
                 <div class="phot">
-                    <img class="img" src="<?= !empty($shop['photo1']) ? htmlspecialchars($shop['photo1']) : '/path/to/default_image.jpg' ?>" alt="<?= !empty($shop['photo1']) ? '店舗写真' : '未登録' ?>">
+                    <?php
+                    if (!empty($shop['photo1'])) {
+                        $img64 = base64_encode($shop['photo1']);
+                        $mime  = 'image/webp';  // 例： image/jpeg, image/png
+
+                        echo '<img src="data:' . $mime . ';base64,' . $img64 . '" style="max-width:100px;" />';
+                    } else {
+                        echo '<img src="png\noimage.png" style="max-width:100px;" />';
+                    }
+                    ?>
                 </div>
             </div>
         </a>

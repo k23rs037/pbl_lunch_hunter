@@ -3,14 +3,15 @@ $repo = new Report();
 $user = new User();
 $rev = new Review();
 $rst = new Restaurant();
+$order = $_GET['order'] ?? null;
+$filter = $_GET['filter'] ?? null;
 
-$filter = $_GET['filter'] ?? '';
 if ($filter === "cancel") {
-    $reports = $repo->getList("report_state = 3");
+    $reports = $repo->getList("report_state = 3",$order);
 } elseif ($filter === "hidden") {
-    $reports = $repo->getList("report_state = 2");
+    $reports = $repo->getList("report_state = 2",$order);
 } else {
-    $reports = $repo->getList("report_state != 2 AND report_state != 3");
+    $reports = $repo->getList("report_state != 2 AND report_state != 3",$order);
 }
 ?>
 <style>
@@ -161,9 +162,22 @@ if ($filter === "cancel") {
     <h1 class="report_title">通報済み口コミ一覧表示</h1>
 
     <div class="top-btn">
+        <?php if($filter!='cancel'){ ?>
         <a href="?do=rev_report&filter=cancel" class="btn btn-primary">通報取り消し一覧</a>
+        <?php }else{ ?>
+        <a href="?do=rev_report&filter" class="btn btn-primary">通報取り消し一覧</a>
+        <?php } 
+
+        if($filter!='hidden'){ ?>
         <a href="?do=rev_report&filter=hidden" class="btn btn-warning">非表示</a>
-        <a href="?do=rev_report" class="btn btn-info">並び替え（新着順）</a>
+        <?php }else{ ?>
+        <a href="?do=rev_report&filter" class="btn btn-warning">非表示</a>
+        <?php } ?>
+        <?php if(!empty($order)){ ?>
+        <a href="?do=rev_report" class="btn btn-info">並び替え（古い順）</a>
+        <?php }else{ ?>
+        <a href="?do=rev_report&order=report_time desc" class="btn btn-info">並び替え（新着順）</a>
+        <?php } ?>
     </div>
 </div>
 

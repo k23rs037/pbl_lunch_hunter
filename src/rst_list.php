@@ -187,7 +187,16 @@ $displayList = array_slice($rst_list_filtered, $start, $limit);
       <?php foreach ($displayList as $s) : ?>
         <div class="col-md-4 mb-4">
           <div class="store-card p-3 h-100 border rounded shadow-sm">
-            <img src="<?= htmlspecialchars($s['photo1'] ?? 'https://via.placeholder.com/300x150') ?>" class="img-fluid mb-3" alt="外観写真">
+            <?php
+            if (!empty($s['photo1'])) {
+                $img64 = base64_encode($s['photo1']);
+                $mime  = 'image/webp';  // 例： image/jpeg, image/png
+
+                echo '<img src="data:' . $mime . ';base64,' . $img64 . '" style="max-width:300px;" />';
+            } else {
+                echo '<img src="png\noimage.png" style="max-width:300px;" />';
+            }
+            ?>
             <h4><a href="?do=rst_detail&rst_id=<?= intval($s['rst_id']) ?>"><?= htmlspecialchars($s['rst_name']) ?></a>
               <?php if (!empty($_SESSION['usertype_id']) && $_SESSION['usertype_id'] === '9') : ?>
                 <!-- 管理者用：割引変更ボタン -->

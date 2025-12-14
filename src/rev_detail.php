@@ -63,9 +63,9 @@ if($_SESSION['usertype_id']==1){
     echo '<button class="btn btn-danger btn-lg" type="button" onclick="openModal()">通報する</button></form>';
 }elseif($_SESSION['usertype_id']==9){
     echo '<form id="hideForm' . $review['review_id'] . '" method="POST" action="?do=rev_save" style="display:none;">';
-    echo '<input type="hidden" name="review_id" value="' . $review['review_id'] . '">';
+    echo '<input type="hidden" name="rev_id" value="' . $review['review_id'] . '">';
     echo '<input type="hidden" name="rst_id" value="'.$review['rst_id'].'">';
-    echo '<input type="hidden" name="order" value="3">';
+    echo '<input type="hidden" name="mode" value="directdelete">';
     echo '</form>';
     echo '<button class="btn btn-danger btn-lg" onclick="confirmHide(' . $review['review_id'] . ')">非表示</button>';
 }
@@ -85,9 +85,7 @@ if($_SESSION['usertype_id']==1){
         <button onclick="closeModal()">NO</button>
     </div>
 </div>
-            </td>
-        </tr>
-    </table>
+
 <div>
     <table border="1" width="100%" style="table-layout:fixed;">
         <tr>
@@ -121,16 +119,15 @@ if($_SESSION['usertype_id']==1){
 
             echo '<img src="data:' . $mime . ';base64,' . $img64 . '" style="max-width:300px;" />';
         } else {
-            echo "画像なし";
+            echo '<img src="png\noimage.png" style="max-width:100px;" />';
         }
         echo '</td><td style="text-align:center;">';
         if (!empty($review['photo2'])) {
             $img64 = base64_encode($review['photo2']);
             $mime  = 'image/webp';  // 例： image/jpeg, image/png
-
             echo '<img src="data:' . $mime . ';base64,' . $img64 . '" style="max-width:300px;" />';
         } else {
-            echo "画像なし";
+            echo '<img src="png\noimage.png" style="max-width:100px;" />';
         }
         echo '</td><td style="text-align:center;">';
         if (!empty($review['photo3'])) {
@@ -139,7 +136,7 @@ if($_SESSION['usertype_id']==1){
 
             echo '<img src="data:' . $mime . ';base64,' . $img64 . '" style="max-width:300px;" />';
         } else {
-            echo "画像なし";
+            echo '<img src="png\noimage.png" style="max-width:100px;" />';
         }
         ?>
         </td>

@@ -215,19 +215,46 @@ function generate_time_options($current_time)
                     <span class="optional-hash">#任意</span>
                     <input type="url" name="url" value="<?= htmlspecialchars($store_data['rst_info']) ?>">
                 </div>
-
+                
                 <!-- 写真 -->
-                <div class="form-group">
-                    <label for="photo_file">写真</label>
-                    <span class="optional-hash">#任意</span><br>
-                    <input type="file" name="photo_file" accept="image/*">
-                    <?php if (!empty($store_data['photo1'])) : ?>
-                        <div id="photoPreviewWrapper" style="margin-top:10px;">
-                            <img id="preview_img" src="<?= htmlspecialchars($store_data['photo1']) ?>" style="max-width:200px; border:1px solid #ccc;">
-                            <button type="button" id="deletePhotoBtn">削除</button>
-                        </div>
-                    <?php endif; ?>
+                <input type="file" id="imageInput1" name="photo_file" accept="image/*">
+
+                <div id="previewArea1" style="display:none; margin-top:10px;">
+                    <img id="previewImage1" style="max-width:200px;">
+                    <button type="button" id="deleteBtn1">選択解除</button>
                 </div>
+                <script>
+                document.addEventListener("DOMContentLoaded", function () {
+                    console.log("JS 読み込みOK");
+
+                    const input = document.getElementById("imageInput1");
+                    const area  = document.getElementById("previewArea1");
+                    const img   = document.getElementById("previewImage1");
+                    const del   = document.getElementById("deleteBtn1");
+
+                    console.log(input, area, img, del);
+
+                    input.addEventListener("change", function () {
+                        console.log("change 発火");
+
+                        const file = this.files[0];
+                        if (!file) return;
+
+                        const reader = new FileReader();
+                        reader.onload = function (e) {
+                            img.src = e.target.result;
+                            area.style.display = "block";
+                        };
+                        reader.readAsDataURL(file);
+                    });
+
+                    del.addEventListener("click", function () {
+                        img.src = "";
+                        area.style.display = "none";
+                        input.value = "";
+                    });
+                });
+                </script>
             </div>
         </div>
     </form>

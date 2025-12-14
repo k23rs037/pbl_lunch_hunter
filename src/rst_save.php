@@ -14,6 +14,17 @@ $rows = 0;
 $total_rows = 0;
 $tel_num = '';
 
+function readBlob()
+{
+    if (
+        isset($_FILES['photo_file']) &&
+        $_FILES['photo_file']['error'] === UPLOAD_ERR_OK
+    ) {
+        return file_get_contents($_FILES['photo_file']['tmp_name']);
+    }
+    return null;
+}
+
 if ($mode === 'insert' || $mode === 'update') {
     // 必須項目チェック
     $required_fields = ['store_name', 'address', 'open_time', 'close_time', 'tel_part1', 'tel_part2', 'tel_part3'];
@@ -47,32 +58,6 @@ if ($mode === 'insert' || $mode === 'update') {
         $genre_sum = array_sum(array_map('intval', $_POST['genre']));
         $pay = array_sum($_POST['payment'] ?? []);
 
-        // 写真処理
-        $photo_file = $_POST['current_photo_path'] ?? '';
-        $delete_photo = ($_POST['delete_photo_flag'] ?? '0') === '1';
-
-        $upload_dir = 'uploads/';
-        if (!is_dir($upload_dir)) mkdir($upload_dir, 0777, true);
-
-        if ($delete_photo && !empty($photo_file) && file_exists($photo_file)) {
-            unlink($photo_file);
-            $photo_file = '';
-        }
-
-        // 新規アップロード
-        if (isset($_FILES['photo_file']) && $_FILES['photo_file']['error'] === UPLOAD_ERR_OK) {
-            $tmp_name = $_FILES['photo_file']['tmp_name'];
-            $ext = pathinfo($_FILES['photo_file']['name'], PATHINFO_EXTENSION);
-            $new_name = $upload_dir . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
-            if (move_uploaded_file($tmp_name, $new_name)) {
-                // 古い写真が残っていたら削除
-                if (!empty($photo_file) && file_exists($photo_file)) {
-                    unlink($photo_file);
-                }
-                $photo_file = $new_name;
-            }
-        }
-
         // 登録データ
         $data = [
             'rst_name'    => $_POST['store_name'],
@@ -83,10 +68,15 @@ if ($mode === 'insert' || $mode === 'update') {
             'rst_holiday' => $holiday,
             'rst_pay'     => $pay,
             'rst_info'    => $_POST['url'] ?? '',
-            'photo1'      => $photo_file,
             'user_id'     => $_SESSION['user_id'],
             'discount'    => 0
         ];
+
+        // 写真処理
+        $blob = readBlob();
+        if ($blob !== null) {
+            $data['photo1'] = $blob;   // ← カラム名に合わせて
+        }
 
         if ($mode === 'insert') {
             $rst_id = $rst->rst_insert($data);
