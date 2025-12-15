@@ -102,7 +102,7 @@ $page        = max(1, (int)($_GET['page'] ?? 1));
 
                 <!-- モーダルフッター -->
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">閉じる</button>
                     <button type="submit" class="btn btn-primary">検索</button>
                 </div>
             </form>

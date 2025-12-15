@@ -9,9 +9,9 @@ create table t_review(
     , review_comment VARCHAR(250) comment 'コメント'
     , rst_id BIGINT not null comment '書き込まれた店舗'
     , user_id CHAR(16) not null comment '登録ユーザID'
-    , photo1 BLOB comment '写真１'
-    , photo2 BLOB comment '写真２'
-    , photo3 BLOB comment '写真３'
+    , photo1 MEDIUMBLOB comment '写真１'
+    , photo2 MEDIUMBLOB comment '写真２'
+    , photo3 MEDIUMBLOB comment '写真３'
     , rev_state BOOLEAN not null comment'表示状態'
     , constraint t_review_pkc primary key (review_id)
 ) comment '口コミ';
@@ -36,7 +36,7 @@ create table t_rstinfo(
     , rst_holiday INT not null comment '店休日'
     , rst_pay INT comment '支払い方法'
     , rst_info VARCHAR(2048) comment '店舗URL'
-    , photo1 BLOB comment '写真'
+    , photo1 MEDIUMBLOB comment '写真'
     , user_id CHAR(16) not null comment '登録ユーザID'
     , discount BOOLEAN not null comment '割引登録'
     , constraint t_rstinfo_pkc primary key (rst_id)

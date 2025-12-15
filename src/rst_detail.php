@@ -415,7 +415,8 @@ $maxCount = max($ratingCount);
                                     <label for="star1">★</label>
 
                                 </div><br>
-                                <textarea name="review_comment" class="big-textarea" placeholder="コメントを入力してください"><?= $myReview ? htmlspecialchars($myReview["review_comment"]) : "" ?></textarea>
+                                コメント：250字以内
+                                <textarea name="review_comment" class="big-textarea" maxlength="250" placeholder="コメントを入力してください"><?= $myReview ? htmlspecialchars($myReview["review_comment"]) : "" ?></textarea>
                             </td>
                             <td style="vertical-align: top;">
                                 <div class="phot">
